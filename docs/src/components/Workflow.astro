@@ -1,0 +1,149 @@
+---
+const steps = [
+  {
+    num: '01',
+    title: 'Instructor creates a course',
+    detail: 'A new GitHub Organization is provisioned. The instructor becomes the org owner with full admin access.',
+    code: 'createCourse(instructorId, "CS 301", "cs301-spring26")',
+  },
+  {
+    num: '02',
+    title: 'Assignment repository is set up',
+    detail: 'The instructor creates a template repo in the org with starter code, tests, and a devcontainer.json.',
+    code: 'createAssignment(courseId, { autoGrading: true, starterCode: true })',
+  },
+  {
+    num: '03',
+    title: 'Students fork the assignment',
+    detail: 'Each student gets their own fork. The devcontainer environment is automatically configured.',
+    code: 'forkAssignment(assignmentId, studentId)',
+  },
+  {
+    num: '04',
+    title: 'Work is submitted via pull request',
+    detail: 'Students open a PR from their fork. The system tracks the submission, runs auto-grading if configured.',
+    code: 'submitAssignment(forkId, studentId)',
+  },
+  {
+    num: '05',
+    title: 'Instructor reviews and grades',
+    detail: 'Inline code comments, structured feedback, and numerical grading — all within the familiar PR interface.',
+    code: 'gradeSubmission(submissionId, { score: 92, maxScore: 100 })',
+  },
+];
+---
+
+<section id="workflow" class="workflow">
+  <div class="section-inner">
+    <h2>How it works</h2>
+    <p class="section-desc">
+      A natural workflow that mirrors real-world software development practices.
+    </p>
+
+    <div class="steps">
+      {steps.map((step) => (
+        <div class="step">
+          <div class="step-num">{step.num}</div>
+          <div class="step-content">
+            <h3>{step.title}</h3>
+            <p>{step.detail}</p>
+            <code class="step-code">{step.code}</code>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .workflow {
+    padding: 5rem 1.5rem;
+  }
+
+  .section-inner {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.75rem;
+  }
+
+  .section-desc {
+    color: var(--color-text-muted);
+    font-size: 1.1rem;
+    max-width: 560px;
+    margin: 0 auto 3rem;
+  }
+
+  .steps {
+    max-width: 700px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    text-align: left;
+  }
+
+  .step {
+    display: flex;
+    gap: 1.25rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.25s;
+  }
+
+  .step:hover {
+    border-color: rgba(99, 102, 241, 0.4);
+    transform: translateX(4px);
+  }
+
+  .step-num {
+    font-family: var(--font-mono);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-accent);
+    opacity: 0.5;
+    flex-shrink: 0;
+    line-height: 1;
+    padding-top: 0.15rem;
+  }
+
+  .step-content h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin-bottom: 0.35rem;
+  }
+
+  .step-content p {
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    margin-bottom: 0.75rem;
+    line-height: 1.6;
+  }
+
+  .step-code {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--color-accent-light);
+    background: rgba(99, 102, 241, 0.08);
+    border: 1px solid rgba(99, 102, 241, 0.15);
+    padding: 0.4rem 0.75rem;
+    border-radius: 6px;
+    white-space: nowrap;
+    overflow-x: auto;
+  }
+
+  @media (max-width: 640px) {
+    .step {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+  }
+</style>

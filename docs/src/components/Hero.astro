@@ -1,0 +1,131 @@
+---
+---
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="badge">Open Source Learning Platform</div>
+    <h1>
+      Inquiry-driven learning,<br />
+      powered by <span class="accent">GitHub</span>
+    </h1>
+    <p class="subtitle">
+      iNQspace brings GitHub Classroom-style workflows to academic institutions.
+      Instructors create courses backed by GitHub Organizations, students fork assignment
+      repositories, and submissions flow through pull requests &mdash; all with built-in
+      grading, notifications, and devcontainer support.
+    </p>
+    <div class="hero-actions">
+      <a href="https://github.com/dcmcshan/inqspace" class="btn btn-primary" target="_blank" rel="noopener">
+        View on GitHub
+      </a>
+      <a href="#features" class="btn btn-secondary">
+        Explore Features
+      </a>
+    </div>
+  </div>
+  <div class="hero-glow" aria-hidden="true"></div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    overflow: hidden;
+    padding: 10rem 1.5rem 6rem;
+    text-align: center;
+  }
+
+  .hero-inner {
+    position: relative;
+    z-index: 1;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .badge {
+    display: inline-block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-accent-light);
+    background: var(--color-accent-glow);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    padding: 0.35rem 1rem;
+    border-radius: 999px;
+    margin-bottom: 1.5rem;
+  }
+
+  h1 {
+    font-size: clamp(2.2rem, 5vw, 3.5rem);
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+    margin-bottom: 1.5rem;
+  }
+
+  .accent {
+    background: linear-gradient(135deg, var(--color-accent-light), var(--color-success));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .subtitle {
+    font-size: 1.15rem;
+    color: var(--color-text-muted);
+    max-width: 640px;
+    margin: 0 auto 2.5rem;
+    line-height: 1.8;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+  }
+
+  .btn-primary {
+    background: var(--color-accent);
+    color: #fff;
+  }
+
+  .btn-primary:hover {
+    background: var(--color-accent-light);
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
+  }
+
+  .btn-secondary {
+    background: var(--color-surface);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+  }
+
+  .btn-secondary:hover {
+    background: var(--color-surface-hover);
+    transform: translateY(-1px);
+  }
+
+  .hero-glow {
+    position: absolute;
+    top: -20%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+</style>

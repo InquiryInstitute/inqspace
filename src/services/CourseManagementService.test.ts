@@ -187,6 +187,9 @@ describe('CourseManagementService', () => {
 
   describe('createCourse', () => {
     it('should create a new course with GitHub organization', async () => {
+      // Set admin token for test
+      process.env.GITHUB_ADMIN_TOKEN = 'test-admin-token';
+
       const course = await courseService.createCourse(
         'instructor-123',
         'CS 101: Introduction to Programming',

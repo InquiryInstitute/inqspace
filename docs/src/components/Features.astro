@@ -1,0 +1,128 @@
+---
+const features = [
+  {
+    icon: '🏫',
+    title: 'Course Management',
+    description: 'Create courses backed by GitHub Organizations. Each course maps to an org, providing isolated namespaces for repositories, teams, and permissions.',
+  },
+  {
+    icon: '📋',
+    title: 'Assignment Workflows',
+    description: 'Define assignments as template repositories. Students fork them into their own copies, preserving the upstream connection for sync and updates.',
+  },
+  {
+    icon: '🔀',
+    title: 'Pull Request Submissions',
+    description: 'Students submit work through pull requests. Instructors review inline, leave feedback on specific lines, and grade directly in the PR flow.',
+  },
+  {
+    icon: '🔐',
+    title: 'Dual Authentication',
+    description: 'Authenticate via GitHub OAuth for repository access and Google Workspace for institutional identity. Tokens are encrypted at rest.',
+  },
+  {
+    icon: '📦',
+    title: 'Devcontainer Support',
+    description: 'Every assignment can include a devcontainer.json, giving students a reproducible development environment with pre-configured extensions and tools.',
+  },
+  {
+    icon: '🔔',
+    title: 'Smart Notifications',
+    description: 'Automated alerts for approaching deadlines, late submissions, grading updates, and upstream assignment changes keep everyone in the loop.',
+  },
+  {
+    icon: '🔄',
+    title: 'Fork Synchronization',
+    description: 'When instructors update assignment repos, students receive notifications and can sync their forks with conflict detection and resolution.',
+  },
+  {
+    icon: '📊',
+    title: 'Grading & Feedback',
+    description: 'Structured grading with scores, inline code comments, and general feedback. Supports auto-grading configuration for automated test runs.',
+  },
+];
+---
+
+<section id="features" class="features">
+  <div class="section-inner">
+    <h2>Built for modern CS education</h2>
+    <p class="section-desc">
+      Everything instructors and students need to run a code-centric course,
+      integrated with the tools developers already use.
+    </p>
+    <div class="grid">
+      {features.map((f) => (
+        <div class="card">
+          <span class="card-icon">{f.icon}</span>
+          <h3>{f.title}</h3>
+          <p>{f.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .features {
+    padding: 5rem 1.5rem;
+  }
+
+  .section-inner {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.75rem;
+  }
+
+  .section-desc {
+    color: var(--color-text-muted);
+    font-size: 1.1rem;
+    max-width: 560px;
+    margin: 0 auto 3rem;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.25rem;
+    text-align: left;
+  }
+
+  .card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.25s;
+  }
+
+  .card:hover {
+    border-color: rgba(99, 102, 241, 0.4);
+    background: var(--color-surface-hover);
+    transform: translateY(-2px);
+  }
+
+  .card-icon {
+    font-size: 1.5rem;
+    display: block;
+    margin-bottom: 0.75rem;
+  }
+
+  .card h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+
+  .card p {
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    line-height: 1.65;
+  }
+</style>
