@@ -180,3 +180,29 @@ This document specifies requirements for GitHub Classroom support in inQspace. i
 2. WHILE viewing the dashboard, THE System SHALL display all enrolled courses
 3. THE System SHALL maintain separate repositories and configurations per course
 4. IF a course is completed, THEN THE System SHALL archive it without deleting content
+
+### Requirement 16: VS Code IDE Embedding and Scripting
+
+**User Story:** As an instructor, I want to embed a fully scriptable VS Code IDE in a browser iframe and control it programmatically, so that I can create interactive lecture experiences with real-time code demonstration.
+
+#### Acceptance Criteria
+
+1. THE System SHALL support running a self-hosted VS Code server (code-server or OpenVSCode Server) inside each GitHub Codespace
+2. WHEN a codespace is created, THE System SHALL start both the VS Code server and an MCP-compatible control server via devcontainer postStartCommand
+3. THE System SHALL forward VS Code server port (e.g., 8080) and MCP control port (e.g., 8765) for external access
+4. WHILE a codespace is running, THE System SHALL make the VS Code UI accessible via iframe at `https://<CODESPACE_NAME>-<PORT>.app.github.dev`
+5. THE System SHALL allow the lecture page to send JSON-RPC/MCP commands to the control server to manipulate the editor
+6. WHEN an MCP command is received, THE System SHALL execute VS Code API calls (open file, reveal line, focus terminal) via a VS Code extension
+7. THE System SHALL support MCP tools including: openFile, runTask, focusTerminal, highlightText, and custom editor actions
+8. WHILE embedding the VS Code IDE, THE System SHALL enforce strict origin validation and authentication on the MCP endpoint
+9. THE System SHALL use GitHub's TLS for all forwarded ports and require authentication for private port access
+10. IF the codespace is stopped or fails, THEN THE System SHALL provide health check endpoints and recovery mechanisms
+
+#### Technical Notes
+
+- The devcontainer.json configures `postStartCommand` to launch code-server (with `--auth none` or password) and an MCP HTTP server
+- Port visibility defaults to private or org for security; public ports require explicit configuration
+- The VS Code extension inside the codespace registers commands and listens for MCP calls (via HTTP polling, SSE, or WebSocket)
+- Origin validation on MCP endpoint prevents CSRF attacks; authentication tokens may be required for private ports
+- GitHub provides `${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}=app.github.dev` for constructing iframe URLs
+- The system includes periodic health checks via GitHub API or MCP "ping" with auto-restart/recreation on failure

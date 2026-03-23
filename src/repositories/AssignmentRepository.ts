@@ -69,13 +69,6 @@ export class InMemoryCourseRepository implements ICourseRepository {
 import { Assignment } from '../types/models';
 import { IAssignmentRepository } from '../types/repositories';
 
-/**
- * In-memory Course Repository implementation for testing
- */
-
-import { Course } from '../types/models';
-import { ICourseRepository } from '../types/repositories';
-
 export class InMemoryAssignmentRepository implements IAssignmentRepository {
   private assignments: Map<string, Assignment> = new Map();
 

@@ -14,7 +14,28 @@ import {
   Notification,
   DevcontainerConfig,
   AuthToken,
+  Codespace,
+  CodespaceConfig,
+  IdeHealthCheck,
+  McpCommand,
+  McpResponse,
+  VsCodeIdeConfig,
+  VsCodeAction,
 } from './models';
+
+// Re-export types for convenience
+export {
+  DevcontainerConfig,
+  Codespace,
+  CodespaceConfig,
+  IdeHealthCheck,
+  McpCommand,
+  McpResponse,
+  VsCodeIdeConfig,
+} from './models';
+
+export type { XapiDomainEvent } from '../xapi/xapiEvents';
+export type { IXapiEventSink } from '../xapi/xapiSinkTypes';
 
 /**
  * Course Management Service Interface
@@ -32,7 +53,11 @@ export interface ICourseManagementService {
  * Assignment Service Interface
  */
 export interface IAssignmentService {
-  createAssignment(courseId: string, config: AssignmentConfig): Promise<Assignment>;
+  createAssignment(
+    courseId: string,
+    config: AssignmentConfig,
+    templateRepositoryUrl?: string
+  ): Promise<Assignment>;
   getAssignment(assignmentId: string): Promise<Assignment>;
   updateAssignment(assignmentId: string, updates: Partial<AssignmentConfig>): Promise<Assignment>;
   deleteAssignment(assignmentId: string): Promise<void>;
@@ -215,4 +240,32 @@ export interface ConflictResolution {
 export interface ConflictFile {
   path: string;
   resolution: string;
+}
+
+/**
+ * VS Code IDE Service Interface
+ * Manages VS Code IDE embedding and scripting via MCP
+ */
+export interface IVsCodeIdeService {
+  // Codespace lifecycle management
+  createCodespace(repoId: string, ref: string, config?: CodespaceConfig): Promise<Codespace>;
+  startCodespace(codespaceName: string): Promise<Codespace>;
+  stopCodespace(codespaceName: string): Promise<void>;
+  deleteCodespace(codespaceName: string): Promise<void>;
+  getCodespace(codespaceName: string): Promise<Codespace>;
+  listCodespaces(): Promise<Codespace[]>;
+  healthCheck(codespaceName: string): Promise<IdeHealthCheck>;
+
+  // VS Code IDE configuration
+  configureVsCodeIde(codespaceName: string, config: VsCodeIdeConfig): Promise<void>;
+  getVsCodeIdeConfig(codespaceName: string): Promise<VsCodeIdeConfig>;
+
+  // MCP command execution
+  sendMcpCommand(codespaceName: string, command: McpCommand): Promise<McpResponse>;
+  executeVsCodeAction(codespaceName: string, action: VsCodeAction, params: any): Promise<any>;
+
+  // Port management
+  getPortUrl(codespaceName: string, port: number): string;
+  getMcpEndpointUrl(codespaceName: string): string;
+  getCodeServerUrl(codespaceName: string): string;
 }

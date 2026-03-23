@@ -18,10 +18,28 @@ export interface Course {
   metadata: CourseMetadata;
 }
 
+/** LRS / xAPI integration (per course). Password field is opaque: encrypt at rest in production. */
+export interface CourseXapiIntegration {
+  enabled: boolean;
+  lrsBaseUrl: string;
+  lrsBasicUsername: string;
+  lrsBasicPasswordSecret: string;
+  activityBaseIri?: string;
+}
+
+/** iframe embed policy for guided lectures (per course). */
+export interface CourseEmbedIntegration {
+  enabled: boolean;
+  /** HTTPS origins allowed to frame inQspace, e.g. https://canvas.school.edu */
+  allowedFrameAncestors: string[];
+}
+
 export interface CourseMetadata {
   semester?: string;
   year?: number;
   description?: string;
+  xapi?: CourseXapiIntegration;
+  embed?: CourseEmbedIntegration;
 }
 
 /**
@@ -63,6 +81,7 @@ export interface Fork {
   lastSyncedAt?: Date;
   status: 'active' | 'submitted' | 'graded';
   environmentSetup: EnvironmentSetup;
+  updatedAt?: Date;
 }
 
 export interface EnvironmentSetup {
@@ -85,6 +104,7 @@ export interface User {
   createdAt: Date;
   lastLoginAt: Date;
   enrollments: Enrollment[];
+  updatedAt?: Date;
 }
 
 export interface Enrollment {
@@ -107,6 +127,7 @@ export interface Submission {
   status: 'pending' | 'graded' | 'returned';
   grade?: Grade;
   feedback: Feedback[];
+  updatedAt?: Date;
 }
 
 export interface Grade {
@@ -145,6 +166,7 @@ export interface Notification {
   read: boolean;
   createdAt: Date;
   readAt?: Date;
+  updatedAt?: Date;
 }
 
 /**
@@ -158,6 +180,7 @@ export interface AuthToken {
   expiresAt: Date;
   scope: string[];
   createdAt: Date;
+  updatedAt?: Date;
 }
 
 /**
@@ -188,4 +211,142 @@ export interface DevcontainerCustomizations {
 export interface VsCodeCustomizations {
   extensions?: string[];
   settings?: Record<string, any>;
+}
+
+/**
+ * Codespace entity representing a GitHub Codespace instance
+ */
+export interface Codespace {
+  id: string;
+  name: string;
+  environmentName: string;
+  state: 'Starting' | 'Available' | 'Stopping' | 'Stopped' | 'Error';
+  createdAt: Date;
+  lastUsedAt?: Date;
+  idleTimeout?: string;
+  retentionPeriod?: string;
+  gitStatus?: GitStatus;
+  ports?: CodespacePort[];
+}
+
+export interface GitStatus {
+  ref: string;
+  sha: string;
+  ahead: number;
+  behind: number;
+}
+
+export interface CodespacePort {
+  port: number;
+  visibility: 'public' | 'private' | 'org';
+  url?: string;
+}
+
+/**
+ * VS Code IDE Configuration for codespaces
+ */
+export interface VsCodeIdeConfig {
+  enabled: boolean;
+  serverType: 'code-server' | 'openvscode-server';
+  port: number;
+  mcpPort: number;
+  auth: 'none' | 'password' | 'token';
+  password?: string;
+  trustedOrigins?: string[];
+  disableTelemetry?: boolean;
+  disableWorkspaceTrust?: boolean;
+}
+
+/**
+ * MCP (Model Context Protocol) Command for VS Code IDE
+ */
+export interface McpCommand {
+  jsonrpc: string;
+  id: string | number;
+  method: string;
+  params: McpCommandParams;
+}
+
+export interface McpCommandParams {
+  name: string;
+  arguments: Record<string, any>;
+}
+
+/**
+ * MCP Response from VS Code IDE
+ */
+export interface McpResponse {
+  jsonrpc: string;
+  id: string | number;
+  result?: any;
+  error?: McpError;
+}
+
+export interface McpError {
+  code: number;
+  message: string;
+  data?: any;
+}
+
+/**
+ * VS Code IDE Action types for MCP commands
+ */
+export type VsCodeAction =
+  | 'openFile'
+  | 'revealLine'
+  | 'focusTerminal'
+  | 'runTask'
+  | 'highlightText'
+  | 'createTerminal'
+  | 'sendToTerminal'
+  | 'executeCommand'
+  | 'showMessage';
+
+/**
+ * VS Code IDE Action Parameters
+ */
+export interface VsCodeActionParams {
+  path?: string;
+  line?: number;
+  column?: number;
+  command?: string;
+  args?: any[];
+  message?: string;
+  type?: 'info' | 'warning' | 'error';
+  terminalName?: string;
+  text?: string;
+}
+
+/**
+ * Health Check Result for VS Code IDE
+ */
+export interface IdeHealthCheck {
+  healthy: boolean;
+  codespaceState: 'Starting' | 'Available' | 'Stopping' | 'Stopped' | 'Error';
+  mcpServer: boolean;
+  codeServer: boolean;
+  lastCheck: Date;
+  errorMessage?: string;
+}
+
+/**
+ * Codespace Lifecycle Management
+ */
+export interface ICodespaceLifecycleService {
+  createCodespace(repoId: string, ref: string, config?: CodespaceConfig): Promise<Codespace>;
+  startCodespace(codespaceName: string): Promise<Codespace>;
+  stopCodespace(codespaceName: string): Promise<void>;
+  deleteCodespace(codespaceName: string): Promise<void>;
+  getCodespace(codespaceName: string): Promise<Codespace>;
+  listCodespaces(): Promise<Codespace[]>;
+  healthCheck(codespaceName: string): Promise<IdeHealthCheck>;
+}
+
+export interface CodespaceConfig {
+  machine?: string;
+  idleTimeout?: string;
+  retentionPeriod?: string;
+  gitClone?: boolean;
+  devcontainerPath?: string;
+  ports?: number[];
 }

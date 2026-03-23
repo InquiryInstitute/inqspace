@@ -874,6 +874,12 @@ Response 201:
 
 **Validates: Requirements 15.4**
 
+### Property 30: VS Code IDE Embedding and Scripting
+
+*For any* codespace running with the devcontainer configuration, the system should start both the VS Code server and MCP control server, make the VS Code UI accessible via iframe, and execute editor actions when receiving MCP commands from an authorized lecture page.
+
+**Validates: Requirements 16.1, 16.2, 16.3, 16.4, 16.5, 16.6, 16.7, 16.8, 16.9, 16.10**
+
 ## Error Handling
 
 ### Error Categories
