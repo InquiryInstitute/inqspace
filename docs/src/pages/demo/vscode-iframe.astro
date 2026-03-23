@@ -124,11 +124,7 @@ const [placeholderOwner, placeholderRepo] = (() => {
       frame.setAttribute('allow', 'clipboard-read; clipboard-write');
       frame.removeAttribute('hidden');
       if (statusEl) statusEl.style.display = 'none';
-      appendLog(
-        'ready — serviceUrl: ' +
-          serviceUrl +
-          (data.externalIp ? ' (Cloud Run host IPv4: ' + data.externalIp + ')' : '')
-      );
+      appendLog('ready — serviceUrl from launch: ' + serviceUrl);
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       if (statusEl) {

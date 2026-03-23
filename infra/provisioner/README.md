@@ -67,13 +67,10 @@ Headers: `X-Provisioner-Secret: <PROVISIONER_SECRET>`.
   "serviceId": "aipa-cs-inquiryinstitute-aipa",
   "serviceName": "projects/…/locations/…/services/…",
   "serviceUrl": "https://…run.app",
-  "externalIp": "34.x.x.x",
   "gitRepoUrl": "https://github.com/InquiryInstitute/AIPA.git",
   "ref": "main"
 }
 ```
-
-`serviceUrl` is the **HTTPS** URL for the Cloud Run service (use this for the browser iframe so TLS matches). `externalIp` is the first **IPv4** from DNS lookup of that hostname (can change with Google’s edge; for debugging or tooling, not a stable substitute for `serviceUrl`).
 
 ## Building the image
 
