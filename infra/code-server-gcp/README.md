@@ -51,6 +51,10 @@ Workflow: **Deploy code-server (Cloud Run)** (manual). Repository secrets:
 - Set **`TRUSTED_ORIGINS`** to every site hostname that iframes code-server (no `https://`).
 - **`PASSWORD`**: rotate per term; prefer hashed password in production (code-server docs).
 
+## HTTP provisioner (arbitrary repo)
+
+To **create or update** a Cloud Run service for any `owner/repo` via HTTPS (same image, runtime clone), deploy the Cloud Functions Gen2 app in **`infra/provisioner/`** (see that folder’s `README.md`). It wraps the same env vars as `deploy-for-repo.sh` / `deploy-cloud-run.sh` and uses the Cloud Run v2 API—**it does not rebuild the image**; point `DEFAULT_IMAGE` at your Artifact Registry tag.
+
 ## Related repos
 
 - Course content (Jupyter Book, slides) may live in **AIPA** or other repos; each can have its own Cloud Run **service** (`aipa-cs-<owner>-<repo>`) reusing the **same** container image built from **this** repo.

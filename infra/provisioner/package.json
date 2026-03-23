@@ -1,0 +1,17 @@
+{
+  "name": "inqspace-provisioner",
+  "version": "1.0.0",
+  "private": true,
+  "description": "HTTP Cloud Function (Gen2) — deploy code-server Cloud Run per GitHub repo (same image, runtime clone).",
+  "main": "index.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "functions-framework --target=provisionRepo --port=8080"
+  },
+  "dependencies": {
+    "@google-cloud/functions-framework": "^3.4.0",
+    "@google-cloud/run": "^3.2.0"
+  }
+}

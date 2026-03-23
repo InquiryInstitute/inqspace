@@ -13,6 +13,8 @@ import {
   AuthService,
   DevcontainerParser,
   VsCodeIdeService,
+  JupyterBookParser,
+  JupyterBookService,
 } from '../services';
 import { XapiPipeline } from '../xapi/xapiPipeline';
 import {
@@ -34,6 +36,7 @@ import {
   IDevcontainerParser,
   IVsCodeIdeService,
   IGitHubClient,
+  IJupyterBookService,
 } from '../types/services';
 
 /**
@@ -62,6 +65,7 @@ export interface Services {
   authService: IAuthService;
   devcontainerParser: IDevcontainerParser;
   vsCodeIdeService: IVsCodeIdeService;
+  jupyterBookService: IJupyterBookService;
 }
 
 /**
@@ -99,6 +103,13 @@ export class DIContainer {
 
     // Create Devcontainer Parser
     const devcontainerParser = new DevcontainerParser();
+
+    const jupyterBookParser = new JupyterBookParser();
+    const jupyterBookService = new JupyterBookService(
+      repositories.courseRepository,
+      repositories.assignmentRepository,
+      jupyterBookParser
+    );
 
     // Create Auth Service
     const authService = new AuthService(
@@ -164,6 +175,7 @@ export class DIContainer {
       authService,
       devcontainerParser,
       vsCodeIdeService,
+      jupyterBookService,
     };
 
     return this.services;

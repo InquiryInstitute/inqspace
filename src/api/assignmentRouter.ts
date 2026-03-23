@@ -36,6 +36,7 @@ export function createAssignmentRouter(assignmentService?: IAssignmentService): 
         maxAttempts: configuration?.maxAttempts,
         requiredFiles: configuration?.requiredFiles ?? [],
         starterCode: configuration?.starterCode ?? true,
+        ...(configuration?.jupyterBook !== undefined ? { jupyterBook: configuration.jupyterBook } : {}),
       };
 
       const assignment = await (assignmentService || ({} as IAssignmentService)).createAssignment(

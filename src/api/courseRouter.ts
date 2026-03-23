@@ -8,7 +8,7 @@
 
 import { Router, Request, Response } from 'express';
 import { ICourseManagementService } from '../types/services';
-import type { CourseXapiIntegration, CourseEmbedIntegration } from '../types/models';
+import type { CourseXapiIntegration, CourseEmbedIntegration, CourseJupyterBookIntegration } from '../types/models';
 import { asyncHandler, ValidationError, NotFoundError } from '../errors';
 import { sanitizeCourseForClient } from '../embed/sanitizeCourse';
 import { frameAncestorsFromCourse } from '../embed/embedSession';
@@ -77,6 +77,28 @@ export function createCourseRouter(courseService?: ICourseManagementService): Ro
       };
       const updated = await (courseService || ({} as ICourseManagementService)).updateCourse(courseId, {
         metadata: { ...course.metadata, xapi: merged },
+      });
+      res.json(sanitizeCourseForClient(updated));
+    })
+  );
+
+  // PATCH /api/courses/:courseId/integrations/jupyter-book — Jupyter Book defaults for the course
+  router.patch(
+    '/:courseId/integrations/jupyter-book',
+    asyncHandler(async (req: Request, res: Response): Promise<void> => {
+      const { courseId } = req.params;
+      if (!courseId) {
+        throw new ValidationError('Course ID is required');
+      }
+      const course = await (courseService || ({} as ICourseManagementService)).getCourse(courseId);
+      const body = req.body as Partial<CourseJupyterBookIntegration>;
+      const merged: CourseJupyterBookIntegration = {
+        enabled: body.enabled ?? course.metadata?.jupyterBook?.enabled ?? false,
+        paths: body.paths ?? course.metadata?.jupyterBook?.paths,
+        pagesBaseUrl: body.pagesBaseUrl ?? course.metadata?.jupyterBook?.pagesBaseUrl,
+      };
+      const updated = await (courseService || ({} as ICourseManagementService)).updateCourse(courseId, {
+        metadata: { ...course.metadata, jupyterBook: merged },
       });
       res.json(sanitizeCourseForClient(updated));
     })

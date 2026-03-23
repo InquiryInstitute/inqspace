@@ -1,18 +1,24 @@
 ---
+const base = import.meta.env.BASE_URL;
+const demoPageHref = `${base}demo/vscode-iframe`;
+/** Cloud Run / GCP code-server URL — required at build time (no static mock). See docs/env.example. */
+const embedSrc = (import.meta.env.PUBLIC_VSCODE_IFRAME_URL ?? '').trim();
+const hasEmbed = embedSrc.length > 0;
 ---
 
 <section class="hero">
   <div class="hero-inner">
     <div class="badge">Open Source Learning Platform</div>
     <h1>
-      Inquiry-driven learning,<br />
-      powered by <span class="accent">GitHub</span>
+      One course repo,<br />
+      <span class="accent">many assignments</span> that build on each other
     </h1>
     <p class="subtitle">
-      iNQspace brings GitHub Classroom-style workflows to academic institutions.
-      Instructors create courses backed by GitHub Organizations, students fork assignment
-      repositories, and submissions flow through pull requests &mdash; all with built-in
-      grading, notifications, and devcontainer support.
+      iNQspace connects GitHub Organizations to inquiry-driven courses. Students fork the
+      <strong>course repository once</strong> and keep working in the same tree: assignments are
+      logical units (deadlines, paths, requirements) layered on shared code and docs, not a new
+      repo per lab. Submit via pull requests, grade in the PR flow, and pair with Jupyter Book,
+      devcontainers, and an embedded IDE where you need it.
     </p>
     <div class="hero-actions">
       <a href="https://github.com/InquiryInstitute/inqspace" class="btn btn-primary" target="_blank" rel="noopener">
@@ -23,6 +29,42 @@
       </a>
     </div>
   </div>
+
+  <div id="embed" class="hero-embed" aria-label="Embedded IDE preview">
+    <p class="embed-kicker">Embedded IDE</p>
+    <p class="embed-lede">
+      Live VS Code in the browser (code-server on Google Cloud Run) embedded below. Set
+      <code>PUBLIC_VSCODE_IFRAME_URL</code> when building the site. Allowlist your Pages origin in code-server
+      <code>TRUSTED_ORIGINS</code> so the iframe can load.
+    </p>
+    <div class="embed-frame">
+      {
+        hasEmbed ? (
+          <iframe
+            src={embedSrc}
+            title="VS Code (code-server)"
+            loading="lazy"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allow="clipboard-read; clipboard-write"
+          />
+        ) : (
+          <div class="embed-missing">
+            <p>
+              No <code>PUBLIC_VSCODE_IFRAME_URL</code> at build time. Copy <code>docs/env.example</code> to
+              <code>docs/.env</code>, set your HTTPS Cloud Run URL, then run <code>npm run build</code>
+              again.
+            </p>
+          </div>
+        )
+      }
+    </div>
+    <p class="embed-footer">
+      <a href={demoPageHref} class="embed-link">Open iframe demo page</a>
+      <span class="embed-sep">·</span>
+      <span class="embed-note">Trusted origins and CSP apply on the code-server host.</span>
+    </p>
+  </div>
+
   <div class="hero-glow" aria-hidden="true"></div>
 </section>
 
@@ -30,7 +72,7 @@
   .hero {
     position: relative;
     overflow: hidden;
-    padding: 10rem 1.5rem 6rem;
+    padding: 10rem 1.5rem 4rem;
     text-align: center;
   }
 
@@ -127,5 +169,105 @@
     height: 600px;
     background: radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, transparent 70%);
     pointer-events: none;
+  }
+
+  .hero-embed {
+    position: relative;
+    z-index: 1;
+    max-width: 960px;
+    margin: 3rem auto 0;
+    padding: 0 1.5rem 2rem;
+    text-align: center;
+  }
+
+  .embed-kicker {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-accent-light);
+    margin-bottom: 0.5rem;
+  }
+
+  .embed-lede {
+    font-size: 0.95rem;
+    color: var(--color-text-muted);
+    line-height: 1.65;
+    max-width: 52ch;
+    margin: 0 auto 1.25rem;
+  }
+
+  .embed-frame {
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    background: #1e1e1e;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+  }
+
+  .embed-frame iframe {
+    display: block;
+    width: 100%;
+    height: min(52vh, 440px);
+    border: 0;
+    background: #1e1e1e;
+  }
+
+  .embed-missing {
+    min-height: min(52vh, 440px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1.5rem;
+    text-align: left;
+    font-size: 0.95rem;
+    color: var(--color-text-muted);
+    line-height: 1.65;
+    max-width: 52ch;
+    margin: 0 auto;
+  }
+
+  .embed-missing code {
+    font-size: 0.85em;
+  }
+
+  .embed-footer {
+    margin-top: 1rem;
+    font-size: 0.88rem;
+    color: var(--color-text-muted);
+    line-height: 1.5;
+  }
+
+  .embed-link {
+    font-weight: 600;
+    color: var(--color-accent-light);
+  }
+
+  .embed-link:hover {
+    color: var(--color-accent);
+  }
+
+  .embed-sep {
+    margin: 0 0.35rem;
+    opacity: 0.6;
+  }
+
+  .embed-note {
+    opacity: 0.9;
+  }
+
+  @media (max-width: 640px) {
+    .embed-frame iframe {
+      height: min(42vh, 320px);
+    }
+
+    .embed-note {
+      display: block;
+      margin-top: 0.35rem;
+    }
+
+    .embed-sep {
+      display: none;
+    }
   }
 </style>

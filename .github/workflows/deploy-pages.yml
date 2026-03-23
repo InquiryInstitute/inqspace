@@ -29,6 +29,8 @@ jobs:
         working-directory: docs
       - run: npm run build
         working-directory: docs
+        env:
+          PUBLIC_VSCODE_IFRAME_URL: ${{ secrets.PUBLIC_VSCODE_IFRAME_URL }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: docs/dist

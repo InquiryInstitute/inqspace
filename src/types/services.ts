@@ -21,6 +21,10 @@ import {
   McpResponse,
   VsCodeIdeConfig,
   VsCodeAction,
+  JupyterBookEffectiveConfig,
+  JupyterBookProjectMeta,
+  CourseJupyterBookIntegration,
+  JupyterBookPathConfig,
 } from './models';
 
 // Re-export types for convenience
@@ -188,6 +192,28 @@ export interface IDevcontainerParser {
   extractDependencies(config: DevcontainerConfig): string[];
   getImage(config: DevcontainerConfig): string;
   getFeatures(config: DevcontainerConfig): Feature[];
+}
+
+/** Parse `_config.yml` / `_toc.yml` for Jupyter Book projects. */
+export interface IJupyterBookParser {
+  parseProjectConfig(yamlContent: string): { meta: JupyterBookProjectMeta; error?: string };
+  parseTocStructure(yamlContent: string): { rootEntries: number; error?: string };
+}
+
+export interface JupyterBookParseBundle {
+  config?: JupyterBookProjectMeta;
+  tocRootEntries?: number;
+  errors: string[];
+}
+
+/**
+ * Jupyter Book as a first-class course/assignment surface (paths, Pages URLs, YAML helpers).
+ */
+export interface IJupyterBookService {
+  getEffectiveForAssignment(assignmentId: string): Promise<JupyterBookEffectiveConfig>;
+  getCourseIntegration(courseId: string): Promise<CourseJupyterBookIntegration | null>;
+  mergePaths(course: Course, assignment: Assignment): JupyterBookPathConfig;
+  parseYamlBundle(configYaml: string, tocYaml?: string): JupyterBookParseBundle;
 }
 
 export interface ValidationResult {

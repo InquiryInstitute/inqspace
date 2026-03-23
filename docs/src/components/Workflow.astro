@@ -3,31 +3,35 @@ const steps = [
   {
     num: '01',
     title: 'Instructor creates a course',
-    detail: 'A new GitHub Organization is provisioned. The instructor becomes the org owner with full admin access.',
+    detail:
+      'A GitHub Organization backs the course. The instructor publishes a single upstream repository with layout, devcontainer, Jupyter Book config, and starter content.',
     code: 'createCourse(instructorId, "CS 301", "cs301-spring26")',
   },
   {
     num: '02',
-    title: 'Assignment repository is set up',
-    detail: 'The instructor creates a template repo in the org with starter code, tests, and a devcontainer.json.',
+    title: 'Assignments are defined on that repo',
+    detail:
+      'Each assignment is a unit of work inside the same tree: deadlines, requirements, and optional paths (e.g. labs/week02/). Later assignments can depend on earlier work.',
     code: 'createAssignment(courseId, { autoGrading: true, starterCode: true })',
   },
   {
     num: '03',
-    title: 'Students fork the assignment',
-    detail: 'Each student gets their own fork. The devcontainer environment is automatically configured.',
-    code: 'forkAssignment(assignmentId, studentId)',
+    title: 'Students fork the course once',
+    detail:
+      'Each student forks the course repository once and keeps one branch of work. They sync when the instructor updates upstream.',
+    code: 'One fork of the course repo per student',
   },
   {
     num: '04',
-    title: 'Work is submitted via pull request',
-    detail: 'Students open a PR from their fork. The system tracks the submission, runs auto-grading if configured.',
-    code: 'submitAssignment(forkId, studentId)',
+    title: 'Submissions are pull requests',
+    detail:
+      'A submission opens a PR from the student fork to the course repo. The platform tracks the submission and can run auto-grading if configured.',
+    code: 'POST /forks/:forkId/submit',
   },
   {
     num: '05',
     title: 'Instructor reviews and grades',
-    detail: 'Inline code comments, structured feedback, and numerical grading — all within the familiar PR interface.',
+    detail: 'Inline comments, structured feedback, and scores—same PR workflow teams use in industry.',
     code: 'gradeSubmission(submissionId, { score: 92, maxScore: 100 })',
   },
 ];
@@ -37,7 +41,7 @@ const steps = [
   <div class="section-inner">
     <h2>How it works</h2>
     <p class="section-desc">
-      A natural workflow that mirrors real-world software development practices.
+      A single long-lived repo per student, with PRs and reviews—like shipping a real product over a term.
     </p>
 
     <div class="steps">

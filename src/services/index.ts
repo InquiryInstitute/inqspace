@@ -27,3 +27,7 @@ export { DevcontainerParser, DevcontainerParseError as DevcontainerParserError }
 
 // VS Code IDE Service
 export { VsCodeIdeService, VsCodeIdeServiceError } from './VsCodeIdeService';
+
+// Jupyter Book
+export { JupyterBookParser } from './JupyterBookParser';
+export { JupyterBookService, JupyterBookServiceError } from './JupyterBookService';

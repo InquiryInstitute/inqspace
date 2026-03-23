@@ -81,6 +81,7 @@ export class AssignmentService implements IAssignmentService {
           maxAttempts: config.maxAttempts,
           requiredFiles: config.requiredFiles,
           starterCode: config.starterCode,
+          ...(config.jupyterBook !== undefined ? { jupyterBook: config.jupyterBook } : {}),
         },
       };
 

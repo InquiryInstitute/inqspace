@@ -3,52 +3,66 @@ const features = [
   {
     icon: '🏫',
     title: 'Course Management',
-    description: 'Create courses backed by GitHub Organizations. Each course maps to an org, providing isolated namespaces for repositories, teams, and permissions.',
+    description:
+      'Courses are backed by GitHub Organizations: one canonical upstream repository per course, with teams and permissions scoped the way you expect.',
+  },
+  {
+    icon: '🌿',
+    title: 'One fork per student',
+    description:
+      'Each student forks the course repository once and keeps a single long-lived workspace. Later assignments extend earlier work in the same repo instead of starting from scratch.',
   },
   {
     icon: '📋',
-    title: 'Assignment Workflows',
-    description: 'Define assignments as template repositories. Students fork them into their own copies, preserving the upstream connection for sync and updates.',
+    title: 'Assignment workflows',
+    description:
+      'Assignments are metadata on top of the shared repo: due dates, requirements, and optional paths within the tree. Students build on prior modules naturally.',
   },
   {
     icon: '🔀',
-    title: 'Pull Request Submissions',
-    description: 'Students submit work through pull requests. Instructors review inline, leave feedback on specific lines, and grade directly in the PR flow.',
+    title: 'Pull request submissions',
+    description:
+      'Submissions are pull requests against the course upstream. Review inline, comment on lines, and grade where the code already lives.',
   },
   {
-    icon: '🔐',
-    title: 'Dual Authentication',
-    description: 'Authenticate via GitHub OAuth for repository access and Google Workspace for institutional identity. Tokens are encrypted at rest.',
+    icon: '📖',
+    title: 'Jupyter Book',
+    description:
+      'First-class support for Jupyter Book: course- and assignment-level paths, defaults for _config.yml / _toc.yml, and published book URLs (e.g. GitHub Pages) wired into the API.',
   },
   {
     icon: '📦',
-    title: 'Devcontainer Support',
-    description: 'Every assignment can include a devcontainer.json, giving students a reproducible development environment with pre-configured extensions and tools.',
+    title: 'Devcontainer support',
+    description:
+      'Standard devcontainer.json for the course repo: one environment for the whole term, aligned with GitHub Codespaces and local Docker workflows.',
+  },
+  {
+    icon: '🔐',
+    title: 'Dual authentication',
+    description:
+      'GitHub OAuth for repository access and Google Workspace for institutional identity. Tokens are encrypted at rest.',
   },
   {
     icon: '🔔',
-    title: 'Smart Notifications',
-    description: 'Automated alerts for approaching deadlines, late submissions, grading updates, and upstream assignment changes keep everyone in the loop.',
-  },
-  {
-    icon: '🔄',
-    title: 'Fork Synchronization',
-    description: 'When instructors update assignment repos, students receive notifications and can sync their forks with conflict detection and resolution.',
+    title: 'Smart notifications',
+    description:
+      'Deadlines, late work, upstream course changes, and grading updates—so students know when to sync or resubmit.',
   },
   {
     icon: '📊',
-    title: 'Grading & Feedback',
-    description: 'Structured grading with scores, inline code comments, and general feedback. Supports auto-grading configuration for automated test runs.',
+    title: 'Grading & feedback',
+    description:
+      'Structured scores, inline feedback, and optional auto-grading hooks. The same PR-centric workflow instructors already use on GitHub.',
   },
 ];
 ---
 
 <section id="features" class="features">
   <div class="section-inner">
-    <h2>Built for modern CS education</h2>
+    <h2>Built for cumulative, code-centric courses</h2>
     <p class="section-desc">
-      Everything instructors and students need to run a code-centric course,
-      integrated with the tools developers already use.
+      One repository, one fork per learner, many assignments that stack—books, notebooks, tests, and
+      IDE embeds on the same platform.
     </p>
     <div class="grid">
       {features.map((f) => (

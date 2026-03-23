@@ -40,6 +40,68 @@ export interface CourseMetadata {
   description?: string;
   xapi?: CourseXapiIntegration;
   embed?: CourseEmbedIntegration;
+  /** Course-wide defaults for Jupyter Book–based materials (GitHub Pages, CI, paths). */
+  jupyterBook?: CourseJupyterBookIntegration;
+}
+
+/**
+ * Jupyter Book layout paths (repo root–relative). Defaults match current Jupyter Book / MyST conventions.
+ */
+export interface JupyterBookPathConfig {
+  /** e.g. `_config.yml` */
+  configFile: string;
+  /** e.g. `_toc.yml` */
+  tocFile: string;
+  /** Markdown / notebook source root, often `book/` */
+  contentRoot: string;
+  /** Static HTML output from `jupyter-book build` */
+  buildOutputDir: string;
+}
+
+export const DEFAULT_JUPYTER_BOOK_PATHS: JupyterBookPathConfig = {
+  configFile: '_config.yml',
+  tocFile: '_toc.yml',
+  contentRoot: 'book',
+  buildOutputDir: '_build/html',
+};
+
+/**
+ * Course-level Jupyter Book policy (first-class alongside devcontainers & IDE).
+ */
+export interface CourseJupyterBookIntegration {
+  /** When true, new assignments may inherit book defaults unless overridden. */
+  enabled: boolean;
+  /** Override any of the default path segments for this course. */
+  paths?: Partial<JupyterBookPathConfig>;
+  /** Optional GitHub Pages (or other) base URL for published books in this course. */
+  pagesBaseUrl?: string;
+}
+
+/**
+ * Per-assignment Jupyter Book options (stored inside {@link AssignmentConfig}).
+ */
+export interface JupyterBookAssignmentOptions {
+  /** This assignment’s primary artifact is a Jupyter Book (build, link-out, xAPI around chapters). */
+  enabled: boolean;
+  paths?: Partial<JupyterBookPathConfig>;
+  /** Published site for this assignment (overrides course pagesBaseUrl when set). */
+  publishedBookUrl?: string;
+}
+
+/** Resolved view for APIs and UIs. */
+export interface JupyterBookEffectiveConfig {
+  enabled: boolean;
+  paths: JupyterBookPathConfig;
+  publishedBookUrl?: string;
+  courseIntegration?: CourseJupyterBookIntegration;
+  assignmentOptions?: JupyterBookAssignmentOptions;
+}
+
+/** Subset of `_config.yml` we surface after parse (for validation UI). */
+export interface JupyterBookProjectMeta {
+  title?: string;
+  author?: string | string[];
+  onlyBuildToc?: boolean;
 }
 
 /**
@@ -66,6 +128,8 @@ export interface AssignmentConfig {
   maxAttempts?: number;
   requiredFiles: string[];
   starterCode: boolean;
+  /** When set, Jupyter Book is a first-class surface for this assignment. */
+  jupyterBook?: JupyterBookAssignmentOptions;
 }
 
 /**

@@ -12,6 +12,7 @@ import { createSyncRouter } from './syncRouter';
 import { createNotificationRouter } from './notificationRouter';
 import { createVsCodeIdeRouter } from './vsCodeIdeRouter';
 import { createEmbedRouter } from './embedRouter';
+import { createJupyterBookRouter } from './jupyterBookRouter';
 import { defaultContainer } from '../di/container';
 import {
   InMemoryCourseRepository,
@@ -64,6 +65,7 @@ export function createApiRouter(): Router {
       embedBaseUrl: process.env.INQSPACE_EMBED_BASE_URL || 'http://localhost:3000',
     })
   );
+  router.use('/jupyter-book', createJupyterBookRouter(services.jupyterBookService));
 
   // Health check endpoint
   router.get('/health', (_req: Request, res: Response): void => {

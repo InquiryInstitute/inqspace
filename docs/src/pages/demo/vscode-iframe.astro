@@ -1,0 +1,303 @@
+---
+import Base from '../../layouts/Base.astro';
+
+const base = import.meta.env.BASE_URL;
+const defaultSrc = (import.meta.env.PUBLIC_VSCODE_IFRAME_URL ?? '').trim();
+const hasDefault = defaultSrc.length > 0;
+---
+
+<Base
+  title="VS Code in an iframe — iNQspace demo"
+  description="Embed code-server (e.g. on Google Cloud Run) in an iframe; set PUBLIC_VSCODE_IFRAME_URL at build time."
+>
+  <div class="page">
+    <header class="header">
+      <a class="back" href={base}>← iNQspace</a>
+      <h1>VS Code in an iframe</h1>
+      <p class="lede">
+        The iframe loads your <strong>code-server</strong> URL (HTTPS), typically from Google Cloud Run. Configure
+        <code>TRUSTED_ORIGINS</code> on the service so your GitHub Pages hostname can embed it. There is no static mock
+        fallback—set <code>PUBLIC_VSCODE_IFRAME_URL</code> when building the docs site.
+      </p>
+    </header>
+
+    <section class="controls" aria-label="Iframe source">
+      <label for="ide-url">Iframe URL</label>
+      <div class="row">
+        <input
+          id="ide-url"
+          type="url"
+          name="ide-url"
+          value={hasDefault ? defaultSrc : ''}
+          placeholder="https://your-service-xxxxx.run.app"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <button type="button" id="btn-load" class="btn primary">Load URL</button>
+      </div>
+      <p class="hint">
+        If the iframe is blank, check <code>X-Frame-Options</code> / <code>frame-ancestors</code> on the code-server host
+        and allow your site origin. Open the URL in a new tab to confirm it is reachable.
+      </p>
+    </section>
+
+    <section class="frame-wrap" aria-label="Embedded editor">
+      <div class="frame-label">iframe</div>
+      {
+        hasDefault ? (
+          <iframe
+            id="ide-frame"
+            title="Embedded editor"
+            src={defaultSrc}
+            loading="lazy"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allow="clipboard-read; clipboard-write"
+          />
+        ) : (
+          <div class="frame-missing" id="ide-frame-placeholder">
+            <p>
+              Set <code>PUBLIC_VSCODE_IFRAME_URL</code> when running <code>npm run build</code>, or enter a URL above and
+              click Load (requires client-side JS).
+            </p>
+          </div>
+        )
+      }
+    </section>
+
+    <section class="log" aria-live="polite">
+      <h2>postMessage log</h2>
+      <p class="muted">Optional: parent page can listen for <code>postMessage</code> from the embedded origin (if any).</p>
+      <pre id="msg-log" class="msg-log">(waiting for messages…)</pre>
+    </section>
+  </div>
+</Base>
+
+<script>
+  const input = document.getElementById('ide-url');
+  const logEl = document.getElementById('msg-log');
+
+  function appendLog(line) {
+    const t = new Date().toISOString().slice(11, 23);
+    if (!logEl) return;
+    logEl.textContent = `[${t}] ${line}\n` + (logEl.textContent === '(waiting for messages…)' ? '' : logEl.textContent);
+  }
+
+  document.getElementById('btn-load')?.addEventListener('click', () => {
+    const v = (input?.value || '').trim();
+    if (!v) {
+      appendLog('error: enter a URL first');
+      return;
+    }
+    try {
+      const u = new URL(v);
+      if (u.protocol !== 'https:' && u.protocol !== 'http:') {
+        appendLog('error: only http(s) URLs');
+        return;
+      }
+      let iframe = document.getElementById('ide-frame');
+      if (iframe) {
+        iframe.src = u.href;
+      } else {
+        const wrap = document.querySelector('.frame-wrap');
+        const placeholder = document.getElementById('ide-frame-placeholder');
+        if (placeholder) placeholder.remove();
+        iframe = document.createElement('iframe');
+        iframe.id = 'ide-frame';
+        iframe.title = 'Embedded editor';
+        iframe.src = u.href;
+        iframe.loading = 'lazy';
+        iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+        iframe.setAttribute('allow', 'clipboard-read; clipboard-write');
+        iframe.style.cssText = 'display:block;width:100%;height:min(72vh,640px);border:0;background:#1e1e1e';
+        wrap?.appendChild(iframe);
+      }
+      appendLog('loaded: ' + u.href);
+    } catch {
+      appendLog('error: invalid URL');
+    }
+  });
+
+  window.addEventListener('message', (ev) => {
+    appendLog('postMessage from ' + (ev.origin || '?') + ': ' + typeof ev.data);
+  });
+</script>
+
+<style>
+  .page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 5rem 1.5rem 3rem;
+  }
+
+  .header .back {
+    display: inline-block;
+    margin-bottom: 1rem;
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+  }
+
+  .header .back:hover {
+    color: var(--color-accent-light);
+  }
+
+  h1 {
+    font-size: clamp(1.75rem, 4vw, 2.25rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.75rem;
+  }
+
+  .lede {
+    color: var(--color-text-muted);
+    max-width: 65ch;
+    font-size: 1rem;
+    line-height: 1.65;
+  }
+
+  .lede code {
+    font-size: 0.88em;
+  }
+
+  .controls {
+    margin-top: 2rem;
+    padding: 1.25rem 1.5rem;
+    background: var(--color-bg-alt);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+  }
+
+  .controls label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--color-text-muted);
+  }
+
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+  }
+
+  .row input {
+    flex: 1;
+    min-width: 200px;
+    padding: 0.6rem 0.85rem;
+    border-radius: 8px;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+  }
+
+  .btn {
+    padding: 0.55rem 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .btn:hover {
+    background: var(--color-surface-hover);
+  }
+
+  .btn.primary {
+    background: var(--color-accent);
+    border-color: transparent;
+    color: #fff;
+  }
+
+  .btn.primary:hover {
+    filter: brightness(1.08);
+  }
+
+  .hint {
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    line-height: 1.5;
+    max-width: 75ch;
+  }
+
+  .frame-wrap {
+    margin-top: 1.5rem;
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    background: #1e1e1e;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+  }
+
+  .frame-label {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    z-index: 2;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(255, 255, 255, 0.45);
+    pointer-events: none;
+  }
+
+  iframe {
+    display: block;
+    width: 100%;
+    height: min(72vh, 640px);
+    border: 0;
+    background: #1e1e1e;
+  }
+
+  .frame-missing {
+    min-height: min(72vh, 640px);
+    padding: 2rem 1.5rem;
+    font-size: 0.95rem;
+    color: var(--color-text-muted);
+    line-height: 1.65;
+    max-width: 52ch;
+    margin: 0 auto;
+  }
+
+  .frame-missing code {
+    font-size: 0.85em;
+  }
+
+  .log {
+    margin-top: 2rem;
+  }
+
+  .log h2 {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .muted {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+    max-width: 70ch;
+  }
+
+  .msg-log {
+    padding: 1rem;
+    background: var(--color-bg-alt);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    white-space: pre-wrap;
+    word-break: break-all;
+    max-height: 180px;
+    overflow: auto;
+  }
+</style>

@@ -9,23 +9,30 @@ const layers = [
   {
     name: 'Application Layer',
     color: '#818cf8',
-    items: ['Course Management', 'Assignment Service', 'Auth Service', 'Grading Service', 'Sync Service'],
+    items: [
+      'Course Management',
+      'Assignment Service',
+      'Jupyter Book',
+      'Auth',
+      'Grading',
+      'Sync',
+    ],
     description: 'Orchestrates business logic, enforces rules, and coordinates between layers.',
   },
   {
     name: 'Data Layer',
     color: '#a5b4fc',
     items: ['Course Repo', 'Assignment Repo', 'Fork Repo', 'User Repo', 'Submission Repo'],
-    description: 'Implements the repository pattern for persistence with MySQL/PostgreSQL support.',
+    description: 'Repository pattern for persistence; forks are keyed per course and student.',
   },
 ];
 
 const models = [
-  { name: 'Course', desc: 'Academic offering tied to a GitHub Org' },
-  { name: 'Assignment', desc: 'Template repository for student work' },
-  { name: 'Fork', desc: "Student's copy of an assignment repo" },
+  { name: 'Course', desc: 'Org + canonical upstream repository for the term' },
+  { name: 'Assignment', desc: 'Logical unit of work within the course repo (not a separate repo)' },
+  { name: 'Fork', desc: "Student's copy of the course repository" },
   { name: 'User', desc: 'Students, instructors, and admins' },
-  { name: 'Submission', desc: 'PR-based assignment submission' },
+  { name: 'Submission', desc: 'PR-based submission to the course upstream' },
   { name: 'AuthToken', desc: 'Encrypted OAuth credentials' },
   { name: 'DevcontainerConfig', desc: 'Reproducible dev environments' },
   { name: 'Notification', desc: 'Event-driven system alerts' },
