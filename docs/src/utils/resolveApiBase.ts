@@ -5,10 +5,20 @@ export function normalizeApiBase(url: string): string {
 
 /**
  * Public iNQspace API base for POST /ide/launch.
- * 1) Build-time `PUBLIC_INQSPACE_API_URL` (optional; e.g. GitHub Actions secret when API is another host)
- * 2) Runtime `/inqspace-api.json` → `{ "apiBase": "https://…" }` if non-empty (optional override)
- * 3) Default: **dynamic** same-origin `{origin}/api` (no static URL — works when a proxy routes `/api` to the API)
+ * 1) Build-time `PUBLIC_INQSPACE_API_URL` (use on GitHub Pages — API is never on the Pages origin)
+ * 2) Runtime `/inqspace-api.json` → `{ "apiBase": "https://…" }` if non-empty
+ * 3) Else same-origin `{origin}/api` only when: localhost, or `PUBLIC_INQSPACE_SAME_ORIGIN_API=true` (reverse proxy in prod)
+ *
+ * GitHub Pages alone does not serve POST /api — defaulting every hostname to /api caused 405 on static hosts.
  */
+function shouldUseSameOriginApiFallback(): boolean {
+  if (typeof window === 'undefined') return false;
+  const flag = import.meta.env.PUBLIC_INQSPACE_SAME_ORIGIN_API;
+  if (flag === 'true' || flag === '1') return true;
+  const h = window.location.hostname;
+  return h === 'localhost' || h === '127.0.0.1';
+}
+
 export async function resolveApiBase(buildTime: string): Promise<string> {
   const fromBuild = normalizeApiBase(buildTime);
   if (fromBuild) return fromBuild;
@@ -28,5 +38,8 @@ export async function resolveApiBase(buildTime: string): Promise<string> {
   }
   if (fromJson) return fromJson;
 
-  return normalizeApiBase(new URL('/api', window.location.origin).href);
+  if (shouldUseSameOriginApiFallback()) {
+    return normalizeApiBase(new URL('/api', window.location.origin).href);
+  }
+  return '';
 }

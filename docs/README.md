@@ -2,20 +2,22 @@
 
 Deploy this **`docs/`** app per course or fork: **GitHub Actions** sets **`PUBLIC_IDE_DEMO_REPO`** to **`github.repository`** (or a repo **variable** override), so GitHub links and the embedded IDE demo default to **that** repo. Add each site’s origin to **`INQSPACE_CORS_ORIGINS`** on the API when the fork uses a different hostname.
 
-## Embedded IDE: API base URL (dynamic default)
+## Embedded IDE: API base URL
 
 The home page and `/demo/vscode-iframe` call **`POST {apiBase}/ide/launch`**.
 
-**By default** the browser uses a **runtime** API base: **`{current origin}/api`** — no GitHub secret or JSON required. That matches setups where routing is **dynamic** (same hostname, `/api` forwarded to your Express/Cloud Run API).
+**GitHub Pages** only serves static files — it does **not** run your Express API at `/api`. You must point the site at a real API host:
 
-**Overrides** (only if the API is on another host):
-
-| Override | When |
+| Source | When |
 | :-- | :-- |
-| **`PUBLIC_INQSPACE_API_URL`** (Actions secret or `docs/.env`) | Bake a full URL at build time, e.g. `https://your-service.run.app/api` |
-| **`docs/public/inqspace-api.json`** → `"apiBase": "https://…"` | Runtime override without rebuilding (omit or leave `apiBase` empty to keep the same-origin default) |
+| **`PUBLIC_INQSPACE_API_URL`** (Actions secret or `docs/.env`) | Recommended: bake `https://your-api.run.app/api` (or wherever Express is deployed) |
+| **`docs/public/inqspace-api.json`** → `"apiBase": "https://…"` | Same URL, committed — no secret |
 
-### GitHub Actions secret (cross-origin API only)
+**Local dev:** without those, the client uses **`http://localhost:4321/api`** only on **localhost** (or set `PUBLIC_INQSPACE_API_URL`).
+
+**Same hostname + reverse proxy:** if your CDN forwards `/api` to the API on the **same** origin as the site, set build env **`PUBLIC_INQSPACE_SAME_ORIGIN_API=true`**.
+
+### GitHub Actions secret (typical for Pages)
 
 Repo → **Settings** → **Secrets and variables** → **Actions** → **`PUBLIC_INQSPACE_API_URL`**
 
