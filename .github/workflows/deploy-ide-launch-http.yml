@@ -16,13 +16,11 @@ env:
   REGION: us-central1
   FUNCTION_NAME: inqspace-ide-launch
 
-permissions:
-  contents: read
-  variables: write
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
