@@ -1,6 +1,8 @@
 /**
  * POST /api/ide/launch — provision code-server for a GitHub repo (proxies to Cloud Functions provisioner).
- * Used by static sites (GitHub Pages): browser only needs PUBLIC_INQSPACE_API_URL, not the Cloud Run iframe URL.
+ * Flow: launch (provision) completes on the server, then the response includes `serviceUrl` for the iframe.
+ * Response: { status: 'ready', serviceUrl, owner, repo, ref } — no editor URL before launch finishes.
+ * Used by static sites (GitHub Pages): browser only needs the API base URL, not the Cloud Run iframe URL.
  */
 
 import { Router, Request, Response, NextFunction } from 'express';
@@ -116,7 +118,13 @@ export function createIdeLaunchRouter(): Router {
         return;
       }
 
-      res.json({ serviceUrl, owner, repo, ref });
+      res.json({
+        status: 'ready',
+        serviceUrl,
+        owner,
+        repo,
+        ref,
+      });
     } catch (e) {
       next(e);
     }

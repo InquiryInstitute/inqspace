@@ -33,12 +33,14 @@ const defaultRepo =
   <div id="embed" class="hero-embed" aria-label="Embedded IDE preview">
     <p class="embed-kicker">Embedded IDE</p>
     <p class="embed-lede">
-      The page asks the iNQspace API to provision code-server for a repo and returns the Cloud Run URL for this
-      iframe—no static editor URL. Use <code>?repo=owner/name</code> and optional <code>&amp;ref=branch</code>; default
-      repo comes from <code>PUBLIC_IDE_DEMO_REPO</code> at build time.
+      The page <strong>launches</strong> first (POST <code>…/ide/launch</code>), waits for provisioning to finish, then
+      uses the returned <code>serviceUrl</code> for the iframe—no preconfigured editor URL. Use
+      <code>?repo=owner/name</code> and optional <code>&amp;ref=branch</code>; default repo comes from
+      <code>PUBLIC_IDE_DEMO_REPO</code> at build time.
     </p>
+    <div id="ide-embed-config" hidden data-default-repo={defaultRepo}></div>
     <div class="embed-frame" id="ide-embed-root">
-      <p id="ide-embed-status" class="embed-status">Starting editor…</p>
+      <p id="ide-embed-status" class="embed-status">Preparing…</p>
       <iframe id="ide-embed-frame" hidden title="VS Code (code-server)"></iframe>
     </div>
     <p class="embed-footer">
@@ -51,10 +53,13 @@ const defaultRepo =
   <div class="hero-glow" aria-hidden="true"></div>
 </section>
 
-<script define:vars={{ defaultRepo }}>
+<script>
   import { resolveApiBase } from '../utils/resolveApiBase';
 
   (async function () {
+    const cfg = document.getElementById('ide-embed-config');
+    const defaultRepo =
+      (cfg?.getAttribute('data-default-repo') || 'InquiryInstitute/inqspace').trim() || 'InquiryInstitute/inqspace';
     const statusEl = document.getElementById('ide-embed-status');
     const frame = document.getElementById('ide-embed-frame');
     const apiBase = await resolveApiBase(import.meta.env.PUBLIC_INQSPACE_API_URL ?? '');
@@ -75,6 +80,7 @@ const defaultRepo =
         const owner = parts[0];
         const repo = parts[1];
         if (!owner || !repo) throw new Error('Missing owner or repo');
+        if (statusEl) statusEl.textContent = 'Launching…';
         const res = await fetch(apiBase + '/ide/launch', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -87,6 +93,10 @@ const defaultRepo =
         }
         const serviceUrl = data.serviceUrl;
         if (!serviceUrl || typeof serviceUrl !== 'string') throw new Error('No serviceUrl in response');
+        if (data.status != null && data.status !== 'ready') {
+          throw new Error('Unexpected launch status');
+        }
+        if (statusEl) statusEl.textContent = 'Opening editor…';
         frame.src = serviceUrl;
         frame.loading = 'lazy';
         frame.referrerPolicy = 'strict-origin-when-cross-origin';

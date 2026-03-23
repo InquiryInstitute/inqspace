@@ -15,11 +15,13 @@ const defaultRepo =
       <a class="back" href={base}>← iNQspace</a>
       <h1>VS Code in an iframe</h1>
       <p class="lede">
-        The browser calls <code>POST …/ide/launch</code> (API base from build env <code>PUBLIC_INQSPACE_API_URL</code> or
-        <code>/inqspace-api.json</code>) with <code>owner</code>, <code>repo</code>, and <code>ref</code>. The API
-        provisions Cloud Run code-server for that repository and returns <code>serviceUrl</code> for the iframe.
+        Click <strong>Launch</strong>: the browser POSTs <code>…/ide/launch</code> (API base from
+        <code>PUBLIC_INQSPACE_API_URL</code> or <code>/inqspace-api.json</code>), waits until provisioning finishes, then
+        applies the response <code>serviceUrl</code> to the iframe—no editor URL until launch completes.
       </p>
     </header>
+
+    <div id="ide-page-config" hidden data-default-repo={defaultRepo}></div>
 
     <section class="controls" aria-label="Repository">
       <label for="ide-owner">Owner / repo / ref</label>
@@ -49,8 +51,12 @@ const defaultRepo =
   </div>
 </Base>
 
-<script define:vars={{ defaultRepo }}>
+<script>
   import { resolveApiBase } from '../../utils/resolveApiBase';
+
+  const cfg = document.getElementById('ide-page-config');
+  const defaultRepo =
+    (cfg?.getAttribute('data-default-repo') || 'InquiryInstitute/inqspace').trim() || 'InquiryInstitute/inqspace';
 
   const ownerIn = document.getElementById('ide-owner');
   const repoIn = document.getElementById('ide-repo');
@@ -70,8 +76,8 @@ const defaultRepo =
     logEl.textContent = `[${t}] ${line}\n` + (logEl.textContent === '(waiting for messages…)' ? '' : logEl.textContent);
   }
 
-  let cachedApiBase: string | null = null;
-  async function getApiBase(): Promise<string> {
+  let cachedApiBase = null;
+  async function getApiBase() {
     if (cachedApiBase !== null) return cachedApiBase;
     cachedApiBase = await resolveApiBase(import.meta.env.PUBLIC_INQSPACE_API_URL ?? '');
     return cachedApiBase;
@@ -93,7 +99,7 @@ const defaultRepo =
       if (statusEl) statusEl.textContent = 'Enter owner and repo.';
       return;
     }
-    if (statusEl) statusEl.textContent = 'Provisioning…';
+    if (statusEl) statusEl.textContent = 'Launching…';
     if (!frame) return;
     try {
       const res = await fetch(apiBase + '/ide/launch', {
@@ -105,13 +111,15 @@ const defaultRepo =
       if (!res.ok) throw new Error(data.error?.message || res.statusText);
       const serviceUrl = data.serviceUrl;
       if (!serviceUrl) throw new Error('No serviceUrl');
+      if (data.status != null && data.status !== 'ready') throw new Error('Unexpected launch status');
+      if (statusEl) statusEl.textContent = 'Opening editor…';
       frame.src = serviceUrl;
       frame.loading = 'lazy';
       frame.referrerPolicy = 'strict-origin-when-cross-origin';
       frame.setAttribute('allow', 'clipboard-read; clipboard-write');
       frame.removeAttribute('hidden');
       if (statusEl) statusEl.style.display = 'none';
-      appendLog('launched: ' + serviceUrl);
+      appendLog('ready — serviceUrl from launch: ' + serviceUrl);
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       if (statusEl) {
