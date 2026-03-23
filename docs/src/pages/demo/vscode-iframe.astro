@@ -93,7 +93,7 @@ const [placeholderOwner, placeholderRepo] = (() => {
     if (!apiBase) {
       if (statusEl)
         statusEl.textContent =
-          'Set GitHub secret PUBLIC_INQSPACE_API_URL, or docs/public/inqspace-api.json apiBase — see docs/README.md. Redeploy Pages.';
+          'IDE launch API URL is not configured. Deploy infra/ide-launch-http (or your API), set PUBLIC_INQSPACE_API_URL or inqspace-api.json apiBase, then rebuild.';
       appendLog('error: no API base');
       return;
     }
