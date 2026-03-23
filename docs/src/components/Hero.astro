@@ -1,8 +1,6 @@
 ---
 const base = import.meta.env.BASE_URL;
 const demoPageHref = `${base}demo/vscode-iframe`;
-/** Base URL of iNQspace API (must include /api if your app mounts the router there). */
-const apiBase = (import.meta.env.PUBLIC_INQSPACE_API_URL ?? '').trim().replace(/\/$/, '');
 /** Default owner/repo when no ?repo= query (build-time). */
 const defaultRepo =
   (import.meta.env.PUBLIC_IDE_DEMO_REPO ?? '').trim() || 'InquiryInstitute/inqspace';
@@ -53,14 +51,17 @@ const defaultRepo =
   <div class="hero-glow" aria-hidden="true"></div>
 </section>
 
-<script define:vars={{ apiBase, defaultRepo }}>
-  (function () {
+<script define:vars={{ defaultRepo }}>
+  import { resolveApiBase } from '../utils/resolveApiBase';
+
+  (async function () {
     const statusEl = document.getElementById('ide-embed-status');
     const frame = document.getElementById('ide-embed-frame');
+    const apiBase = await resolveApiBase(import.meta.env.PUBLIC_INQSPACE_API_URL ?? '');
     if (!apiBase) {
       if (statusEl) {
         statusEl.textContent =
-          'Set PUBLIC_INQSPACE_API_URL (iNQspace API base, e.g. https://your-api.run.app/api) at build time so this page can call POST …/ide/launch.';
+          'Set the API base: GitHub secret PUBLIC_INQSPACE_API_URL at build time, or edit public/inqspace-api.json (apiBase) and redeploy.';
       }
       return;
     }

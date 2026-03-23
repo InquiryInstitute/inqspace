@@ -2,7 +2,6 @@
 import Base from '../../layouts/Base.astro';
 
 const base = import.meta.env.BASE_URL;
-const apiBase = (import.meta.env.PUBLIC_INQSPACE_API_URL ?? '').trim().replace(/\/$/, '');
 const defaultRepo =
   (import.meta.env.PUBLIC_IDE_DEMO_REPO ?? '').trim() || 'InquiryInstitute/inqspace';
 ---
@@ -16,9 +15,9 @@ const defaultRepo =
       <a class="back" href={base}>← iNQspace</a>
       <h1>VS Code in an iframe</h1>
       <p class="lede">
-        The browser calls <code>POST {apiBase || '(set PUBLIC_INQSPACE_API_URL)'}/ide/launch</code> with
-        <code>owner</code>, <code>repo</code>, and <code>ref</code>. The API provisions Cloud Run code-server for that
-        repository and returns <code>serviceUrl</code> for the iframe. No manual editor URL.
+        The browser calls <code>POST …/ide/launch</code> (API base from build env <code>PUBLIC_INQSPACE_API_URL</code> or
+        <code>/inqspace-api.json</code>) with <code>owner</code>, <code>repo</code>, and <code>ref</code>. The API
+        provisions Cloud Run code-server for that repository and returns <code>serviceUrl</code> for the iframe.
       </p>
     </header>
 
@@ -50,7 +49,9 @@ const defaultRepo =
   </div>
 </Base>
 
-<script define:vars={{ apiBase, defaultRepo }}>
+<script define:vars={{ defaultRepo }}>
+  import { resolveApiBase } from '../../utils/resolveApiBase';
+
   const ownerIn = document.getElementById('ide-owner');
   const repoIn = document.getElementById('ide-repo');
   const refIn = document.getElementById('ide-ref');
@@ -69,9 +70,19 @@ const defaultRepo =
     logEl.textContent = `[${t}] ${line}\n` + (logEl.textContent === '(waiting for messages…)' ? '' : logEl.textContent);
   }
 
+  let cachedApiBase: string | null = null;
+  async function getApiBase(): Promise<string> {
+    if (cachedApiBase !== null) return cachedApiBase;
+    cachedApiBase = await resolveApiBase(import.meta.env.PUBLIC_INQSPACE_API_URL ?? '');
+    return cachedApiBase;
+  }
+
   async function launchFromInputs() {
+    const apiBase = await getApiBase();
     if (!apiBase) {
-      if (statusEl) statusEl.textContent = 'Set PUBLIC_INQSPACE_API_URL at build time.';
+      if (statusEl)
+        statusEl.textContent =
+          'Set GitHub secret PUBLIC_INQSPACE_API_URL or edit public/inqspace-api.json (apiBase) and redeploy.';
       appendLog('error: no API base');
       return;
     }
