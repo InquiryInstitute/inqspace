@@ -1,0 +1,88 @@
+# Deploy infra/ide-launch-http to Cloud Functions Gen2, then set repository variable
+# PUBLIC_INQSPACE_API_URL so the next docs build points at this API.
+#
+# Required repository secrets:
+#   GCP_SA_KEY — service account JSON (roles: Cloud Functions Admin, Service Account User, Cloud Build Editor, Artifact Registry if needed)
+#   GCP_PROJECT — e.g. institute-481516
+#   INQSPACE_PROVISIONER_URL — HTTPS URL of the provisioner Cloud Function (POST JSON)
+#   INQSPACE_PROVISIONER_SECRET — same value as provisioner PROVISIONER_SECRET
+#
+name: Deploy IDE launch HTTP
+
+on:
+  workflow_dispatch:
+
+env:
+  REGION: us-central1
+  FUNCTION_NAME: inqspace-ide-launch
+
+permissions:
+  contents: read
+  variables: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check required secrets
+        env:
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+          GCP_PROJECT: ${{ secrets.GCP_PROJECT }}
+          PROVISIONER_URL: ${{ secrets.INQSPACE_PROVISIONER_URL }}
+          PROVISIONER_SECRET: ${{ secrets.INQSPACE_PROVISIONER_SECRET }}
+        run: |
+          test -n "${GCP_SA_KEY}" || (echo "Missing secret: GCP_SA_KEY" >&2; exit 1)
+          test -n "${GCP_PROJECT}" || (echo "Missing secret: GCP_PROJECT" >&2; exit 1)
+          test -n "${PROVISIONER_URL}" || (echo "Missing secret: INQSPACE_PROVISIONER_URL" >&2; exit 1)
+          test -n "${PROVISIONER_SECRET}" || (echo "Missing secret: INQSPACE_PROVISIONER_SECRET" >&2; exit 1)
+
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: npm ci and deploy Cloud Function (Gen2)
+        env:
+          PROVISIONER_URL: ${{ secrets.INQSPACE_PROVISIONER_URL }}
+          PROVISIONER_SECRET: ${{ secrets.INQSPACE_PROVISIONER_SECRET }}
+          GCP_PROJECT: ${{ secrets.GCP_PROJECT }}
+        run: |
+          set -euo pipefail
+          cd infra/ide-launch-http
+          npm ci
+          gcloud functions deploy "${FUNCTION_NAME}" \
+            --gen2 \
+            --runtime=nodejs20 \
+            --region="${REGION}" \
+            --source=. \
+            --entry-point=ideLaunch \
+            --trigger-http \
+            --allow-unauthenticated \
+            --project="${GCP_PROJECT}" \
+            --set-env-vars="INQSPACE_PROVISIONER_URL=${PROVISIONER_URL},INQSPACE_PROVISIONER_SECRET=${PROVISIONER_SECRET}"
+
+      - name: Resolve HTTPS base URL and set PUBLIC_INQSPACE_API_URL
+        env:
+          GCP_PROJECT: ${{ secrets.GCP_PROJECT }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          BASE="$(gcloud functions describe "${FUNCTION_NAME}" --gen2 --region="${REGION}" --project="${GCP_PROJECT}" --format='value(serviceConfig.uri)')"
+          if [[ -z "${BASE}" ]]; then
+            echo "Could not read serviceConfig.uri from function describe" >&2
+            exit 1
+          fi
+          BASE="${BASE%/}"
+          echo "PUBLIC_INQSPACE_API_URL=${BASE}"
+          gh variable set PUBLIC_INQSPACE_API_URL --repo "${{ github.repository }}" --body "${BASE}"
+          {
+            echo "### IDE launch API deployed"
+            echo "Set repository variable **PUBLIC_INQSPACE_API_URL** to:"
+            echo ""
+            echo "\`${BASE}\`"
+            echo ""
+            echo "Run **Deploy to GitHub Pages** (Actions) or push a \`docs/**\` change to rebuild the site."
+          } >> "${GITHUB_STEP_SUMMARY}"

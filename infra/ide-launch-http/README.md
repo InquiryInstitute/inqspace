@@ -17,6 +17,19 @@ This is the **Cloud Function** counterpart to **`src/api/ideLaunchRouter.ts`** i
 
 Store secrets in Secret Manager or `--set-secrets` when deploying.
 
+## Deploy from GitHub Actions
+
+Repository **Actions → Deploy IDE launch HTTP** (workflow_dispatch). Requires secrets:
+
+| Secret | Purpose |
+|--------|---------|
+| `GCP_SA_KEY` | Service account JSON |
+| `GCP_PROJECT` | GCP project id |
+| `INQSPACE_PROVISIONER_URL` | Provisioner function HTTPS URL |
+| `INQSPACE_PROVISIONER_SECRET` | Same secret the provisioner expects |
+
+On success, the workflow sets repository variable **`PUBLIC_INQSPACE_API_URL`** to the function’s HTTPS base URL. Re-run **Deploy to GitHub Pages** (or push `docs/**`) so the site picks it up.
+
 ## Deploy (example)
 
 ```bash
