@@ -1,9 +1,11 @@
 ---
 const base = import.meta.env.BASE_URL;
 const demoPageHref = `${base}demo/vscode-iframe`;
-/** Cloud Run / GCP code-server URL — required at build time (no static mock). See docs/env.example. */
-const embedSrc = (import.meta.env.PUBLIC_VSCODE_IFRAME_URL ?? '').trim();
-const hasEmbed = embedSrc.length > 0;
+/** Base URL of iNQspace API (must include /api if your app mounts the router there). */
+const apiBase = (import.meta.env.PUBLIC_INQSPACE_API_URL ?? '').trim().replace(/\/$/, '');
+/** Default owner/repo when no ?repo= query (build-time). */
+const defaultRepo =
+  (import.meta.env.PUBLIC_IDE_DEMO_REPO ?? '').trim() || 'InquiryInstitute/inqspace';
 ---
 
 <section class="hero">
@@ -33,40 +35,71 @@ const hasEmbed = embedSrc.length > 0;
   <div id="embed" class="hero-embed" aria-label="Embedded IDE preview">
     <p class="embed-kicker">Embedded IDE</p>
     <p class="embed-lede">
-      Live VS Code in the browser (code-server on Google Cloud Run) embedded below. Set
-      <code>PUBLIC_VSCODE_IFRAME_URL</code> when building the site. Allowlist your Pages origin in code-server
-      <code>TRUSTED_ORIGINS</code> so the iframe can load.
+      The page asks the iNQspace API to provision code-server for a repo and returns the Cloud Run URL for this
+      iframe—no static editor URL. Use <code>?repo=owner/name</code> and optional <code>&amp;ref=branch</code>; default
+      repo comes from <code>PUBLIC_IDE_DEMO_REPO</code> at build time.
     </p>
-    <div class="embed-frame">
-      {
-        hasEmbed ? (
-          <iframe
-            src={embedSrc}
-            title="VS Code (code-server)"
-            loading="lazy"
-            referrerpolicy="strict-origin-when-cross-origin"
-            allow="clipboard-read; clipboard-write"
-          />
-        ) : (
-          <div class="embed-missing">
-            <p>
-              No <code>PUBLIC_VSCODE_IFRAME_URL</code> at build time. Copy <code>docs/env.example</code> to
-              <code>docs/.env</code>, set your HTTPS Cloud Run URL, then run <code>npm run build</code>
-              again.
-            </p>
-          </div>
-        )
-      }
+    <div class="embed-frame" id="ide-embed-root">
+      <p id="ide-embed-status" class="embed-status">Starting editor…</p>
+      <iframe id="ide-embed-frame" hidden title="VS Code (code-server)"></iframe>
     </div>
     <p class="embed-footer">
       <a href={demoPageHref} class="embed-link">Open iframe demo page</a>
       <span class="embed-sep">·</span>
-      <span class="embed-note">Trusted origins and CSP apply on the code-server host.</span>
+      <span class="embed-note">API must allow this site’s origin (CORS) and provisioner must allowlist it on code-server.</span>
     </p>
   </div>
 
   <div class="hero-glow" aria-hidden="true"></div>
 </section>
+
+<script define:vars={{ apiBase, defaultRepo }}>
+  (function () {
+    const statusEl = document.getElementById('ide-embed-status');
+    const frame = document.getElementById('ide-embed-frame');
+    if (!apiBase) {
+      if (statusEl) {
+        statusEl.textContent =
+          'Set PUBLIC_INQSPACE_API_URL (iNQspace API base, e.g. https://your-api.run.app/api) at build time so this page can call POST …/ide/launch.';
+      }
+      return;
+    }
+    if (!frame) return;
+    async function run() {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const repoParam = params.get('repo');
+        const ref = params.get('ref') || 'main';
+        const parts = repoParam ? repoParam.split('/') : defaultRepo.split('/');
+        const owner = parts[0];
+        const repo = parts[1];
+        if (!owner || !repo) throw new Error('Missing owner or repo');
+        const res = await fetch(apiBase + '/ide/launch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ owner, repo, ref }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          const msg = data.error?.message || data.error?.code || res.statusText;
+          throw new Error(msg || 'Launch failed');
+        }
+        const serviceUrl = data.serviceUrl;
+        if (!serviceUrl || typeof serviceUrl !== 'string') throw new Error('No serviceUrl in response');
+        frame.src = serviceUrl;
+        frame.loading = 'lazy';
+        frame.referrerPolicy = 'strict-origin-when-cross-origin';
+        frame.setAttribute('allow', 'clipboard-read; clipboard-write');
+        frame.removeAttribute('hidden');
+        if (statusEl) statusEl.style.display = 'none';
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        if (statusEl) statusEl.textContent = 'Could not launch editor: ' + msg;
+      }
+    }
+    run();
+  })();
+</script>
 
 <style>
   .hero {
@@ -205,7 +238,7 @@ const hasEmbed = embedSrc.length > 0;
     box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
   }
 
-  .embed-frame iframe {
+  .embed-frame iframe:not([hidden]) {
     display: block;
     width: 100%;
     height: min(52vh, 440px);
@@ -213,7 +246,7 @@ const hasEmbed = embedSrc.length > 0;
     background: #1e1e1e;
   }
 
-  .embed-missing {
+  .embed-status {
     min-height: min(52vh, 440px);
     display: flex;
     align-items: center;
@@ -227,8 +260,12 @@ const hasEmbed = embedSrc.length > 0;
     margin: 0 auto;
   }
 
-  .embed-missing code {
-    font-size: 0.85em;
+  .embed-status:empty {
+    display: none;
+  }
+
+  .embed-frame iframe[hidden] {
+    display: none !important;
   }
 
   .embed-footer {
@@ -257,7 +294,7 @@ const hasEmbed = embedSrc.length > 0;
   }
 
   @media (max-width: 640px) {
-    .embed-frame iframe {
+    .embed-frame iframe:not([hidden]) {
       height: min(42vh, 320px);
     }
 

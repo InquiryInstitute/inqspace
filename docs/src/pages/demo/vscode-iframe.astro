@@ -2,79 +2,66 @@
 import Base from '../../layouts/Base.astro';
 
 const base = import.meta.env.BASE_URL;
-const defaultSrc = (import.meta.env.PUBLIC_VSCODE_IFRAME_URL ?? '').trim();
-const hasDefault = defaultSrc.length > 0;
+const apiBase = (import.meta.env.PUBLIC_INQSPACE_API_URL ?? '').trim().replace(/\/$/, '');
+const defaultRepo =
+  (import.meta.env.PUBLIC_IDE_DEMO_REPO ?? '').trim() || 'InquiryInstitute/inqspace';
 ---
 
 <Base
   title="VS Code in an iframe — iNQspace demo"
-  description="Embed code-server (e.g. on Google Cloud Run) in an iframe; set PUBLIC_VSCODE_IFRAME_URL at build time."
+  description="Launch code-server via iNQspace API (POST /ide/launch) for a GitHub repo—no static iframe URL."
 >
   <div class="page">
     <header class="header">
       <a class="back" href={base}>← iNQspace</a>
       <h1>VS Code in an iframe</h1>
       <p class="lede">
-        The iframe loads your <strong>code-server</strong> URL (HTTPS), typically from Google Cloud Run. Configure
-        <code>TRUSTED_ORIGINS</code> on the service so your GitHub Pages hostname can embed it. There is no static mock
-        fallback—set <code>PUBLIC_VSCODE_IFRAME_URL</code> when building the docs site.
+        The browser calls <code>POST {apiBase || '(set PUBLIC_INQSPACE_API_URL)'}/ide/launch</code> with
+        <code>owner</code>, <code>repo</code>, and <code>ref</code>. The API provisions Cloud Run code-server for that
+        repository and returns <code>serviceUrl</code> for the iframe. No manual editor URL.
       </p>
     </header>
 
-    <section class="controls" aria-label="Iframe source">
-      <label for="ide-url">Iframe URL</label>
+    <section class="controls" aria-label="Repository">
+      <label for="ide-owner">Owner / repo / ref</label>
       <div class="row">
-        <input
-          id="ide-url"
-          type="url"
-          name="ide-url"
-          value={hasDefault ? defaultSrc : ''}
-          placeholder="https://your-service-xxxxx.run.app"
-          autocomplete="off"
-          spellcheck="false"
-        />
-        <button type="button" id="btn-load" class="btn primary">Load URL</button>
+        <input id="ide-owner" type="text" placeholder="InquiryInstitute" autocomplete="off" />
+        <input id="ide-repo" type="text" placeholder="inqspace" autocomplete="off" />
+        <input id="ide-ref" type="text" placeholder="main" autocomplete="off" />
+        <button type="button" id="btn-launch" class="btn primary">Launch</button>
       </div>
       <p class="hint">
-        If the iframe is blank, check <code>X-Frame-Options</code> / <code>frame-ancestors</code> on the code-server host
-        and allow your site origin. Open the URL in a new tab to confirm it is reachable.
+        Or use query <code>?repo=owner/name&amp;ref=main</code> on the home page. Ensure the API allows this origin (CORS)
+        and code-server <code>TRUSTED_ORIGINS</code> includes your Pages hostname.
       </p>
     </section>
 
     <section class="frame-wrap" aria-label="Embedded editor">
       <div class="frame-label">iframe</div>
-      {
-        hasDefault ? (
-          <iframe
-            id="ide-frame"
-            title="Embedded editor"
-            src={defaultSrc}
-            loading="lazy"
-            referrerpolicy="strict-origin-when-cross-origin"
-            allow="clipboard-read; clipboard-write"
-          />
-        ) : (
-          <div class="frame-missing" id="ide-frame-placeholder">
-            <p>
-              Set <code>PUBLIC_VSCODE_IFRAME_URL</code> when running <code>npm run build</code>, or enter a URL above and
-              click Load (requires client-side JS).
-            </p>
-          </div>
-        )
-      }
+      <p id="ide-status" class="frame-status">Idle — click Launch or load with query params.</p>
+      <iframe id="ide-frame" hidden title="VS Code (code-server)"></iframe>
     </section>
 
     <section class="log" aria-live="polite">
       <h2>postMessage log</h2>
-      <p class="muted">Optional: parent page can listen for <code>postMessage</code> from the embedded origin (if any).</p>
+      <p class="muted">Optional: parent page can listen for <code>postMessage</code> from the embedded origin.</p>
       <pre id="msg-log" class="msg-log">(waiting for messages…)</pre>
     </section>
   </div>
 </Base>
 
-<script>
-  const input = document.getElementById('ide-url');
+<script define:vars={{ apiBase, defaultRepo }}>
+  const ownerIn = document.getElementById('ide-owner');
+  const repoIn = document.getElementById('ide-repo');
+  const refIn = document.getElementById('ide-ref');
+  const statusEl = document.getElementById('ide-status');
+  const frame = document.getElementById('ide-frame');
   const logEl = document.getElementById('msg-log');
+
+  const parts = defaultRepo.split('/');
+  if (ownerIn && parts[0]) ownerIn.value = parts[0];
+  if (repoIn && parts[1]) repoIn.value = parts[1];
+  if (refIn) refIn.value = 'main';
 
   function appendLog(line) {
     const t = new Date().toISOString().slice(11, 23);
@@ -82,43 +69,64 @@ const hasDefault = defaultSrc.length > 0;
     logEl.textContent = `[${t}] ${line}\n` + (logEl.textContent === '(waiting for messages…)' ? '' : logEl.textContent);
   }
 
-  document.getElementById('btn-load')?.addEventListener('click', () => {
-    const v = (input?.value || '').trim();
-    if (!v) {
-      appendLog('error: enter a URL first');
+  async function launchFromInputs() {
+    if (!apiBase) {
+      if (statusEl) statusEl.textContent = 'Set PUBLIC_INQSPACE_API_URL at build time.';
+      appendLog('error: no API base');
       return;
     }
-    try {
-      const u = new URL(v);
-      if (u.protocol !== 'https:' && u.protocol !== 'http:') {
-        appendLog('error: only http(s) URLs');
-        return;
-      }
-      let iframe = document.getElementById('ide-frame');
-      if (iframe) {
-        iframe.src = u.href;
-      } else {
-        const wrap = document.querySelector('.frame-wrap');
-        const placeholder = document.getElementById('ide-frame-placeholder');
-        if (placeholder) placeholder.remove();
-        iframe = document.createElement('iframe');
-        iframe.id = 'ide-frame';
-        iframe.title = 'Embedded editor';
-        iframe.src = u.href;
-        iframe.loading = 'lazy';
-        iframe.referrerPolicy = 'strict-origin-when-cross-origin';
-        iframe.setAttribute('allow', 'clipboard-read; clipboard-write');
-        iframe.style.cssText = 'display:block;width:100%;height:min(72vh,640px);border:0;background:#1e1e1e';
-        wrap?.appendChild(iframe);
-      }
-      appendLog('loaded: ' + u.href);
-    } catch {
-      appendLog('error: invalid URL');
+    const owner = (ownerIn?.value || '').trim();
+    const repo = (repoIn?.value || '').trim();
+    const ref = (refIn?.value || '').trim() || 'main';
+    if (!owner || !repo) {
+      if (statusEl) statusEl.textContent = 'Enter owner and repo.';
+      return;
     }
-  });
+    if (statusEl) statusEl.textContent = 'Provisioning…';
+    if (!frame) return;
+    try {
+      const res = await fetch(apiBase + '/ide/launch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ owner, repo, ref }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error?.message || res.statusText);
+      const serviceUrl = data.serviceUrl;
+      if (!serviceUrl) throw new Error('No serviceUrl');
+      frame.src = serviceUrl;
+      frame.loading = 'lazy';
+      frame.referrerPolicy = 'strict-origin-when-cross-origin';
+      frame.setAttribute('allow', 'clipboard-read; clipboard-write');
+      frame.removeAttribute('hidden');
+      if (statusEl) statusEl.style.display = 'none';
+      appendLog('launched: ' + serviceUrl);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      if (statusEl) {
+        statusEl.style.display = '';
+        statusEl.textContent = 'Error: ' + msg;
+      }
+      appendLog('error: ' + msg);
+    }
+  }
+
+  document.getElementById('btn-launch')?.addEventListener('click', launchFromInputs);
+
+  (function autoFromQuery() {
+    const params = new URLSearchParams(window.location.search);
+    const r = params.get('repo');
+    if (r && r.includes('/')) {
+      const [o, rep] = r.split('/');
+      if (ownerIn) ownerIn.value = o;
+      if (repoIn) repoIn.value = rep;
+      if (params.get('ref') && refIn) refIn.value = params.get('ref') || 'main';
+      launchFromInputs();
+    }
+  })();
 
   window.addEventListener('message', (ev) => {
-    appendLog('postMessage from ' + (ev.origin || '?') + ': ' + typeof ev.data);
+    appendLog('postMessage from ' + (ev.origin || '?'));
   });
 </script>
 
@@ -183,7 +191,7 @@ const hasDefault = defaultSrc.length > 0;
 
   .row input {
     flex: 1;
-    min-width: 200px;
+    min-width: 120px;
     padding: 0.6rem 0.85rem;
     border-radius: 8px;
     border: 1px solid var(--color-border);
@@ -249,7 +257,14 @@ const hasDefault = defaultSrc.length > 0;
     pointer-events: none;
   }
 
-  iframe {
+  .frame-status {
+    min-height: 120px;
+    padding: 1.5rem;
+    font-size: 0.95rem;
+    color: var(--color-text-muted);
+  }
+
+  #ide-frame:not([hidden]) {
     display: block;
     width: 100%;
     height: min(72vh, 640px);
@@ -257,18 +272,8 @@ const hasDefault = defaultSrc.length > 0;
     background: #1e1e1e;
   }
 
-  .frame-missing {
-    min-height: min(72vh, 640px);
-    padding: 2rem 1.5rem;
-    font-size: 0.95rem;
-    color: var(--color-text-muted);
-    line-height: 1.65;
-    max-width: 52ch;
-    margin: 0 auto;
-  }
-
-  .frame-missing code {
-    font-size: 0.85em;
+  #ide-frame[hidden] {
+    display: none !important;
   }
 
   .log {

@@ -30,7 +30,7 @@ jobs:
       - run: npm run build
         working-directory: docs
         env:
-          PUBLIC_VSCODE_IFRAME_URL: ${{ secrets.PUBLIC_VSCODE_IFRAME_URL }}
+          PUBLIC_INQSPACE_API_URL: ${{ secrets.PUBLIC_INQSPACE_API_URL }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: docs/dist

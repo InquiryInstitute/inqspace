@@ -13,6 +13,7 @@ import { createNotificationRouter } from './notificationRouter';
 import { createVsCodeIdeRouter } from './vsCodeIdeRouter';
 import { createEmbedRouter } from './embedRouter';
 import { createJupyterBookRouter } from './jupyterBookRouter';
+import { createIdeLaunchRouter } from './ideLaunchRouter';
 import { defaultContainer } from '../di/container';
 import {
   InMemoryCourseRepository,
@@ -66,6 +67,7 @@ export function createApiRouter(): Router {
     })
   );
   router.use('/jupyter-book', createJupyterBookRouter(services.jupyterBookService));
+  router.use('/ide', createIdeLaunchRouter());
 
   // Health check endpoint
   router.get('/health', (_req: Request, res: Response): void => {
