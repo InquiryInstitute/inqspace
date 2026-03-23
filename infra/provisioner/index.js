@@ -1,5 +1,6 @@
 'use strict';
 
+const dns = require('dns').promises;
 const { ServicesClient } = require('@google-cloud/run');
 
 /**
@@ -131,11 +132,24 @@ async function provisionRepo(req, res) {
     const [serviceResult] = await op.promise();
     const url = serviceResult?.uri || null;
 
+    /** First IPv4 for the Cloud Run hostname (informational; iframe should still use HTTPS serviceUrl). */
+    let externalIp = null;
+    if (url) {
+      try {
+        const { hostname } = new URL(url);
+        const { address } = await dns.lookup(hostname, { family: 4 });
+        externalIp = address;
+      } catch (e) {
+        console.warn('provisioner: dns lookup for Cloud Run host failed', e);
+      }
+    }
+
     return json(res, 200, {
       ok: true,
       serviceId,
       serviceName,
       serviceUrl: url,
+      externalIp,
       gitRepoUrl,
       ref,
     });

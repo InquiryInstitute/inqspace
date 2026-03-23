@@ -1,7 +1,7 @@
 /**
  * POST /api/ide/launch — provision code-server for a GitHub repo (proxies to Cloud Functions provisioner).
  * Flow: launch (provision) completes on the server, then the response includes `serviceUrl` for the iframe.
- * Response: { status: 'ready', serviceUrl, owner, repo, ref } — no editor URL before launch finishes.
+ * Response: { status: 'ready', serviceUrl, externalIp?, owner, repo, ref } — serviceUrl is HTTPS (iframe); externalIp is DNS A record for observability.
  * Used by static sites (GitHub Pages): browser only needs the API base URL, not the Cloud Run iframe URL.
  */
 
@@ -83,9 +83,17 @@ export function createIdeLaunchRouter(): Router {
         body: JSON.stringify({ owner, repo, ref }),
       });
 
-      let data: { serviceUrl?: string; error?: string | { message?: string } };
+      let data: {
+        serviceUrl?: string;
+        externalIp?: string;
+        error?: string | { message?: string };
+      };
       try {
-        data = (await upstream.json()) as { serviceUrl?: string; error?: string | { message?: string } };
+        data = (await upstream.json()) as {
+          serviceUrl?: string;
+          externalIp?: string;
+          error?: string | { message?: string };
+        };
       } catch {
         res.status(502).json({
           error: { code: 'PROVISIONER_ERROR', message: 'Invalid response from provisioner' },
@@ -118,9 +126,12 @@ export function createIdeLaunchRouter(): Router {
         return;
       }
 
+      const externalIp = typeof data.externalIp === 'string' && data.externalIp.trim() ? data.externalIp.trim() : undefined;
+
       res.json({
         status: 'ready',
         serviceUrl,
+        ...(externalIp !== undefined ? { externalIp } : {}),
         owner,
         repo,
         ref,
