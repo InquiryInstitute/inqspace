@@ -44,6 +44,10 @@ The system follows a three-tier architecture:
 - **AuthToken**: Authentication credentials (encrypted)
 - **DevcontainerConfig**: Development environment configuration
 
+## GCP: code-server on Cloud Run
+
+Browser-based VS Code (code-server) for courses — **Dockerfile, Cloud Build, deploy scripts**, and the **aipa-lecturer-bridge** extension live under **`infra/code-server-gcp/`** and **`extensions/aipa-lecturer-bridge/`**. See **[infra/code-server-gcp/README.md](infra/code-server-gcp/README.md)** for local deploy, `TRUSTED_ORIGINS`, and GitHub Actions.
+
 ## Setup
 
 ### Install Dependencies

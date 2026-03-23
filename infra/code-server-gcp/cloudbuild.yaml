@@ -1,0 +1,14 @@
+# Build context: repository root (see deploy-cloud-run.sh).
+steps:
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - "build"
+      - "-t"
+      - "${_IMAGE}"
+      - "-f"
+      - "infra/code-server-gcp/Dockerfile"
+      - "."
+images:
+  - "${_IMAGE}"
+substitutions:
+  _IMAGE: "set-by-deploy-script"

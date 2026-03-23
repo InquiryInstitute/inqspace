@@ -1,0 +1,10 @@
+.git/
+_build/
+_build_html/
+_build_pdf/
+_build_epub/
+.jupyter-book/
+.venv/
+**/node_modules/
+__pycache__/
+.ipynb_checkpoints/

@@ -1,0 +1,55 @@
+# Build the code-server image (Cloud Build) and deploy to Cloud Run. Manual dispatch only.
+#
+# Secrets: GCP_SA_KEY, GCP_PROJECT, CODE_SERVER_PASSWORD, CODE_SERVER_TRUSTED_ORIGINS
+# Optional: GCP_REGION, GIT_REPO_URL, GIT_REF, GIT_TOKEN
+#
+name: Deploy code-server (Cloud Run)
+
+on:
+  workflow_dispatch:
+    inputs:
+      skip_build:
+        description: "Set to 1 to redeploy existing image only"
+        required: false
+        default: "0"
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check secrets
+        run: |
+          test -n "${{ secrets.GCP_SA_KEY }}" || (echo "Missing secret GCP_SA_KEY" >&2; exit 1)
+          test -n "${{ secrets.GCP_PROJECT }}" || (echo "Missing secret GCP_PROJECT" >&2; exit 1)
+          test -n "${{ secrets.CODE_SERVER_PASSWORD }}" || (echo "Missing secret CODE_SERVER_PASSWORD" >&2; exit 1)
+          test -n "${{ secrets.CODE_SERVER_TRUSTED_ORIGINS }}" || (echo "Missing secret CODE_SERVER_TRUSTED_ORIGINS" >&2; exit 1)
+
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Deploy Cloud Run (image + service for this repository)
+        env:
+          GCP_PROJECT: ${{ secrets.GCP_PROJECT }}
+          GCP_REGION: ${{ secrets.GCP_REGION }}
+          PASSWORD: ${{ secrets.CODE_SERVER_PASSWORD }}
+          TRUSTED_ORIGINS: ${{ secrets.CODE_SERVER_TRUSTED_ORIGINS }}
+          SKIP_BUILD: ${{ github.event.inputs.skip_build == '1' && '1' || '0' }}
+          GIT_REPO_URL: ${{ secrets.GIT_REPO_URL }}
+          GIT_REF: ${{ secrets.GIT_REF }}
+          GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
+        run: |
+          export GCP_REGION="${GCP_REGION:-us-central1}"
+          export GCP_PROJECT PASSWORD TRUSTED_ORIGINS SKIP_BUILD
+          [[ -n "${GIT_REPO_URL:-}" ]] && export GIT_REPO_URL
+          [[ -n "${GIT_REF:-}" ]] && export GIT_REF
+          [[ -n "${GIT_TOKEN:-}" ]] && export GIT_TOKEN
+          cd infra/code-server-gcp
+          ./deploy-for-repo.sh "${{ github.repository }}" main

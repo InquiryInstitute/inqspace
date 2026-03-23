@@ -1,0 +1,28 @@
+{
+  "name": "aipa-lecturer-bridge",
+  "displayName": "AIPA Lecturer Bridge (IDE channel)",
+  "description": "Receives WebSocket messages and runs vscode.commands — for AI lecturer drive.",
+  "version": "0.0.3",
+  "publisher": "aipa",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["Other"],
+  "activationEvents": ["onStartupFinished"],
+  "main": "./extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "AIPA Lecturer",
+      "properties": {
+        "aipaLecturer.ideCommandWebSocketUrl": {
+          "type": "string",
+          "default": "",
+          "description": "WebSocket URL for IDE channel messages (wss:// recommended)."
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}
