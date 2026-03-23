@@ -1,43 +1,44 @@
-# Astro Starter Kit: Minimal
+# iNQspace marketing site (Astro)
 
-```sh
-npm create astro@latest -- --template minimal
+Static site for **https://inqspace.castalia.institute** (GitHub Pages).
+
+## Embedded IDE: API base URL
+
+The home page and `/demo/vscode-iframe` call **`POST {apiBase}/ide/launch`** on your deployed **iNQspace Express API** (not code-server directly). You must provide `apiBase` in **one** of these ways:
+
+### Option A — GitHub Actions secret (recommended for CI)
+
+1. Repo → **Settings** → **Secrets and variables** → **Actions** → **New repository secret**
+2. Name: **`PUBLIC_INQSPACE_API_URL`**
+3. Value: your API root with **`/api`** if the app mounts the router there, e.g. `https://your-service-xxxxx.run.app/api`
+4. Push any change under **`docs/**`** (or run **Actions → Deploy to GitHub Pages → Run workflow**) to rebuild.
+
+From the CLI (replace the URL):
+
+```bash
+printf '%s' 'https://your-service-xxxxx.run.app/api' | gh secret set PUBLIC_INQSPACE_API_URL --repo InquiryInstitute/inqspace
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+### Option B — `public/inqspace-api.json` (no secret)
 
-## 🚀 Project Structure
+1. Edit **`docs/public/inqspace-api.json`** and set `"apiBase"` to the same URL as above (no trailing slash).
+2. Commit and push; the **Deploy to GitHub Pages** workflow runs on `docs/**` changes.
 
-Inside of your Astro project, you'll see the following folders and files:
+The browser loads this file at **`/inqspace-api.json`** and uses it when the build-time env var is empty.
 
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
-```
+### Local dev
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+Copy **`docs/env.example`** to **`docs/.env`** and set `PUBLIC_INQSPACE_API_URL` (see comments there).
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+---
 
-Any static assets, like images, can be placed in the `public/` directory.
+## Astro commands
 
-## 🧞 Commands
+| Command           | Action                                      |
+| :---------------- | :------------------------------------------ |
+| `npm install`     | Install dependencies                        |
+| `npm run dev`     | Dev server at `http://localhost:4321`       |
+| `npm run build`   | Production build to `./dist/`               |
+| `npm run preview` | Preview the production build                |
 
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+See [Astro docs](https://docs.astro.build) for more.

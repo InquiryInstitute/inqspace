@@ -44,6 +44,10 @@ The system follows a three-tier architecture:
 - **AuthToken**: Authentication credentials (encrypted)
 - **DevcontainerConfig**: Development environment configuration
 
+## Docs site (GitHub Pages)
+
+The Astro site under **`docs/`** powers the public marketing pages. To wire the **embedded IDE** demo to your deployed API, set **`PUBLIC_INQSPACE_API_URL`** (Actions secret) or **`docs/public/inqspace-api.json`** → `apiBase`. See **[docs/README.md](docs/README.md)**.
+
 ## GCP: code-server on Cloud Run
 
 Browser-based VS Code (code-server) for courses — **Dockerfile, Cloud Build, deploy scripts**, and the **aipa-lecturer-bridge** extension live under **`infra/code-server-gcp/`** and **`extensions/aipa-lecturer-bridge/`**. See **[infra/code-server-gcp/README.md](infra/code-server-gcp/README.md)** for local deploy, `TRUSTED_ORIGINS`, and GitHub Actions.
