@@ -1,4 +1,5 @@
 ---
+import { siteGithubUrl, siteGithubIssuesUrl } from '../config/site';
 ---
 
 <footer>
@@ -8,8 +9,8 @@
       <p>An inquiry-driven learning platform by <a href="https://castalia.institute">Castalia Institute</a></p>
     </div>
     <div class="footer-links">
-      <a href="https://github.com/InquiryInstitute/inqspace" target="_blank" rel="noopener">Source Code</a>
-      <a href="https://github.com/InquiryInstitute/inqspace/issues" target="_blank" rel="noopener">Issues</a>
+      <a href={siteGithubUrl} target="_blank" rel="noopener">Source Code</a>
+      <a href={siteGithubIssuesUrl} target="_blank" rel="noopener">Issues</a>
       <a href="https://castalia.institute" target="_blank" rel="noopener">Castalia Institute</a>
     </div>
   </div>

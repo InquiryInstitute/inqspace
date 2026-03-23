@@ -46,7 +46,7 @@ The system follows a three-tier architecture:
 
 ## Docs site (GitHub Pages)
 
-The Astro site under **`docs/`** powers the public marketing pages. To wire the **embedded IDE** demo to your deployed API, set **`PUBLIC_INQSPACE_API_URL`** (Actions secret) or **`docs/public/inqspace-api.json`** → `apiBase`. See **[docs/README.md](docs/README.md)**.
+The Astro site under **`docs/`** powers the public marketing pages. **Each fork** can deploy its own site: CI sets **`PUBLIC_IDE_DEMO_REPO`** to **`github.repository`** so GitHub links and the IDE demo target that repo. API base defaults to **`{origin}/api`** at runtime; cross-origin overrides **`PUBLIC_INQSPACE_API_URL`** / **`docs/public/inqspace-api.json`**. See **[docs/README.md](docs/README.md)**.
 
 ## GCP: code-server on Cloud Run
 

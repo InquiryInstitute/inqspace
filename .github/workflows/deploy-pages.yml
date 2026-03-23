@@ -31,6 +31,8 @@ jobs:
         working-directory: docs
         env:
           PUBLIC_INQSPACE_API_URL: ${{ secrets.PUBLIC_INQSPACE_API_URL }}
+          # Each fork’s Pages build targets that repo (override with repo variable PUBLIC_IDE_DEMO_REPO if needed).
+          PUBLIC_IDE_DEMO_REPO: ${{ vars.PUBLIC_IDE_DEMO_REPO || github.repository }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: docs/dist

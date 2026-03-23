@@ -1,9 +1,9 @@
 ---
+import { siteGithubRepo, siteGithubUrl } from '../config/site';
+
 const base = import.meta.env.BASE_URL;
 const demoPageHref = `${base}demo/vscode-iframe`;
-/** Default owner/repo when no ?repo= query (build-time). */
-const defaultRepo =
-  (import.meta.env.PUBLIC_IDE_DEMO_REPO ?? '').trim() || 'InquiryInstitute/inqspace';
+const defaultRepo = siteGithubRepo;
 ---
 
 <section class="hero">
@@ -21,7 +21,7 @@ const defaultRepo =
       devcontainers, and an embedded IDE where you need it.
     </p>
     <div class="hero-actions">
-      <a href="https://github.com/InquiryInstitute/inqspace" class="btn btn-primary" target="_blank" rel="noopener">
+      <a href={siteGithubUrl} class="btn btn-primary" target="_blank" rel="noopener">
         View on GitHub
       </a>
       <a href="#features" class="btn btn-secondary">
@@ -35,8 +35,8 @@ const defaultRepo =
     <p class="embed-lede">
       The page <strong>launches</strong> first (POST <code>…/ide/launch</code>), waits for provisioning to finish, then
       uses the returned <code>serviceUrl</code> for the iframe—no preconfigured editor URL. Use
-      <code>?repo=owner/name</code> and optional <code>&amp;ref=branch</code>; default repo comes from
-      <code>PUBLIC_IDE_DEMO_REPO</code> at build time.
+      <code>?repo=owner/name</code> and optional <code>&amp;ref=branch</code>. Each deployment targets its own GitHub repo
+      (CI sets <code>PUBLIC_IDE_DEMO_REPO</code> to that repository).
     </p>
     <div id="ide-embed-config" hidden data-default-repo={defaultRepo}></div>
     <div class="embed-frame" id="ide-embed-root">
@@ -55,11 +55,12 @@ const defaultRepo =
 
 <script>
   import { resolveApiBase } from '../utils/resolveApiBase';
+  import { siteGithubRepo } from '../config/site';
 
   (async function () {
     const cfg = document.getElementById('ide-embed-config');
     const defaultRepo =
-      (cfg?.getAttribute('data-default-repo') || 'InquiryInstitute/inqspace').trim() || 'InquiryInstitute/inqspace';
+      (cfg?.getAttribute('data-default-repo') || siteGithubRepo).trim() || siteGithubRepo;
     const statusEl = document.getElementById('ide-embed-status');
     const frame = document.getElementById('ide-embed-frame');
     const apiBase = await resolveApiBase(import.meta.env.PUBLIC_INQSPACE_API_URL ?? '');
