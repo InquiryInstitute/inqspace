@@ -33,10 +33,10 @@ const defaultRepo = siteGithubRepo;
   <div id="embed" class="hero-embed" aria-label="Embedded IDE preview">
     <p class="embed-kicker">Embedded IDE</p>
     <p class="embed-lede">
-      The page <strong>launches</strong> first (POST <code>…/ide/launch</code>), waits for provisioning to finish, then
-      uses the returned <code>serviceUrl</code> for the iframe—no preconfigured editor URL. Use
-      <code>?repo=owner/name</code> and optional <code>&amp;ref=branch</code>. Each deployment targets its own GitHub repo
-      (CI sets <code>PUBLIC_IDE_DEMO_REPO</code> to that repository).
+      <strong>Launch</strong> calls <code>POST …/ide/launch</code>: the backend provisions or updates the
+      <strong>Cloud Run</strong> service (code-server container), then returns its HTTPS URL. This page sets the iframe
+      <code>src</code> to that URL—nothing is hardcoded. Use <code>?repo=owner/name</code> and optional
+      <code>&amp;ref=branch</code>; default repo comes from this site’s build (<code>PUBLIC_IDE_DEMO_REPO</code>).
     </p>
     <div id="ide-embed-config" hidden data-default-repo={defaultRepo}></div>
     <div class="embed-frame" id="ide-embed-root">

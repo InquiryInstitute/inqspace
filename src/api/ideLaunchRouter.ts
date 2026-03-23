@@ -1,8 +1,7 @@
 /**
- * POST /api/ide/launch — provision code-server for a GitHub repo (proxies to Cloud Functions provisioner).
- * Flow: launch (provision) completes on the server, then the response includes `serviceUrl` for the iframe.
- * Response: { status: 'ready', serviceUrl, owner, repo, ref } — serviceUrl is the Cloud Run HTTPS URL for the iframe.
- * Used by static sites (GitHub Pages): browser only needs the API base URL, not the Cloud Run iframe URL.
+ * POST /api/ide/launch — provision code-server on Cloud Run for a GitHub repo (proxies to Cloud Functions provisioner).
+ * Flow: provisioner updates Cloud Run → returns `serviceUrl` (HTTPS) → browser sets iframe src to that URL.
+ * Response: { status: 'ready', serviceUrl, owner, repo, ref }.
  */
 
 import { Router, Request, Response, NextFunction } from 'express';
