@@ -6,11 +6,11 @@ Deploy this **`docs/`** app per course or fork: **GitHub Actions** sets **`PUBLI
 
 The home page and `/demo/vscode-iframe` call **`POST {apiBase}/ide/launch`**.
 
-**GitHub Pages** only serves static files — it does **not** run your Express API at `/api`. You must point the site at a real API host:
+**GitHub Pages** only serves static files — it does **not** run your API at `/api`. Point the site at a host that implements **`POST …/ide/launch`** (CORS + proxy to the provisioner):
 
 | Source | When |
 | :-- | :-- |
-| **`PUBLIC_INQSPACE_API_URL`** (Actions secret or `docs/.env`) | Recommended: bake `https://your-api.run.app/api` (or wherever Express is deployed) |
+| **`PUBLIC_INQSPACE_API_URL`** (Actions secret or `docs/.env`) | e.g. **`infra/ide-launch-http/`** (Cloud Function Gen2 — same role as `src/api/ideLaunchRouter.ts`), or Express / Cloud Run |
 | **`docs/public/inqspace-api.json`** → `"apiBase": "https://…"` | Same URL, committed — no secret |
 
 **Local dev:** without those, the client uses **`http://localhost:4321/api`** only on **localhost** (or set `PUBLIC_INQSPACE_API_URL`).
@@ -22,8 +22,11 @@ The home page and `/demo/vscode-iframe` call **`POST {apiBase}/ide/launch`**.
 Repo → **Settings** → **Secrets and variables** → **Actions** → **`PUBLIC_INQSPACE_API_URL`**
 
 ```bash
-printf '%s' 'https://your-service-xxxxx.run.app/api' | gh secret set PUBLIC_INQSPACE_API_URL --repo InquiryInstitute/inqspace
+# Example: Cloud Function base URL (no path) — client calls {url}/ide/launch
+printf '%s' 'https://REGION-PROJECT.cloudfunctions.net/inqspace-ide-launch' | gh secret set PUBLIC_INQSPACE_API_URL --repo InquiryInstitute/inqspace
 ```
+
+See **[infra/ide-launch-http/README.md](../infra/ide-launch-http/README.md)** to deploy that function.
 
 ### Local dev
 

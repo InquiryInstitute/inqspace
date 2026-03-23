@@ -2,6 +2,8 @@
 
 HTTP function that **creates or updates** a **Cloud Run** service running the **same code-server image** as `infra/code-server-gcp/`, parameterized for an **arbitrary GitHub repo** (`GIT_REPO_URL`, `GIT_REF`, optional `GIT_TOKEN`). This matches `deploy-for-repo.sh` + `deploy-cloud-run.sh`, but callable over HTTPS for automation (iNQspace control plane, scripts, CI).
 
+**Browsers** should not call this function directly (it requires `X-Provisioner-Secret`). Use the public **`infra/ide-launch-http/`** Cloud Function or **`src/api/ideLaunchRouter`** in the Node app to proxy requests.
+
 **It does not rebuild the Docker image.** Build and push the image with Cloud Build / CI first; set `DEFAULT_IMAGE` to that Artifact Registry URL.
 
 ## Environment (function)
